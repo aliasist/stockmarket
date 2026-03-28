@@ -4,3 +4,4 @@ market_pulse.db-wal
 market_pulse.db-shm
 .env
 *.log
+.aider*

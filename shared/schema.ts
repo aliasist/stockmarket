@@ -1,62 +1,66 @@
-import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
-import { createInsertSchema } from "drizzle-zod";
-import { z } from "zod";
+import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core"
+import { createInsertSchema } from "drizzle-zod"
+import { z } from "zod"
 
 // ── Scrub Runs ─────────────────────────────────────────────────────────────
 export const scrubRuns = sqliteTable("scrub_runs", {
   id: integer("id").primaryKey({ autoIncrement: true }),
-  runAt: text("run_at").notNull(),            // ISO timestamp
-  sources: text("sources").notNull(),          // JSON: ["sec_edgar","reddit","hn"]
+  runAt: text("run_at").notNull(), // ISO timestamp
+  sources: text("sources").notNull(), // JSON: ["sec_edgar","reddit","hn"]
   vectorsFound: integer("vectors_found").notNull().default(0),
   status: text("status").notNull().default("pending"), // pending | running | done | error
   summary: text("summary"),
-});
-export const insertScrubRunSchema = createInsertSchema(scrubRuns).omit({ id: true });
-export type InsertScrubRun = z.infer<typeof insertScrubRunSchema>;
-export type ScrubRun = typeof scrubRuns.$inferSelect;
+})
+
+export const insertScrubRunSchema = createInsertSchema(scrubRuns)
+export type InsertScrubRun = Omit<typeof scrubRuns.$inferInsert, "id">
+export type ScrubRun = typeof scrubRuns.$inferSelect
 
 // ── Market Vectors (cross-referenced signals) ─────────────────────────────
 export const marketVectors = sqliteTable("market_vectors", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   scrubRunId: integer("scrub_run_id").notNull(),
-  ticker: text("ticker"),                       // e.g. "SPY", "BTC", null for macro
-  signal: text("signal").notNull(),             // bullish | bearish | neutral
-  confidence: real("confidence").notNull(),     // 0-1
-  reasoning: text("reasoning").notNull(),       // AI generated logic
-  sources: text("sources").notNull(),           // JSON array of source URLs
+  ticker: text("ticker"), // e.g. "SPY", "BTC", null for macro
+  signal: text("signal").notNull(), // bullish | bearish | neutral
+  confidence: real("confidence").notNull(), // 0-1
+  reasoning: text("reasoning").notNull(), // AI generated logic
+  sources: text("sources").notNull(), // JSON array of source URLs
   createdAt: text("created_at").notNull(),
-});
-export const insertMarketVectorSchema = createInsertSchema(marketVectors).omit({ id: true });
-export type InsertMarketVector = z.infer<typeof insertMarketVectorSchema>;
-export type MarketVector = typeof marketVectors.$inferSelect;
+})
+
+export const insertMarketVectorSchema = createInsertSchema(marketVectors)
+export type InsertMarketVector = Omit<typeof marketVectors.$inferInsert, "id">
+export type MarketVector = typeof marketVectors.$inferSelect
 
 // ── News Articles (journalism feed) ───────────────────────────────────────
 export const newsArticles = sqliteTable("news_articles", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   scrubRunId: integer("scrub_run_id").notNull(),
   title: text("title").notNull(),
-  source: text("source").notNull(),             // reddit | hackernews | bluesky | rss
+  source: text("source").notNull(), // reddit | hackernews | bluesky | rss
   url: text("url").notNull(),
   publishedAt: text("published_at"),
   summary: text("summary"),
-  tone: text("tone"),                           // fear_mongering | speculative | data_backed | neutral
+  tone: text("tone"), // fear_mongering | speculative | data_backed | neutral
   toneReasoning: text("tone_reasoning"),
   ticker: text("ticker"),
-});
-export const insertNewsArticleSchema = createInsertSchema(newsArticles).omit({ id: true });
-export type InsertNewsArticle = z.infer<typeof insertNewsArticleSchema>;
-export type NewsArticle = typeof newsArticles.$inferSelect;
+})
+
+export const insertNewsArticleSchema = createInsertSchema(newsArticles)
+export type InsertNewsArticle = Omit<typeof newsArticles.$inferInsert, "id">
+export type NewsArticle = typeof newsArticles.$inferSelect
 
 // ── ELI5 Cache ────────────────────────────────────────────────────────────
 export const eli5Cache = sqliteTable("eli5_cache", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   term: text("term").notNull().unique(),
-  explanation: text("explanation").notNull(),   // metaphor using playground/toys/candy
+  explanation: text("explanation").notNull(), // metaphor using playground/toys/candy
   createdAt: text("created_at").notNull(),
-});
-export const insertEli5CacheSchema = createInsertSchema(eli5Cache).omit({ id: true });
-export type InsertEli5Cache = z.infer<typeof insertEli5CacheSchema>;
-export type Eli5Cache = typeof eli5Cache.$inferSelect;
+})
+
+export const insertEli5CacheSchema = createInsertSchema(eli5Cache)
+export type InsertEli5Cache = Omit<typeof eli5Cache.$inferInsert, "id">
+export type Eli5Cache = typeof eli5Cache.$inferSelect
 
 // ── Market Watchlist ───────────────────────────────────────────────────────
 export const watchlist = sqliteTable("watchlist", {
@@ -65,7 +69,8 @@ export const watchlist = sqliteTable("watchlist", {
   name: text("name").notNull(),
   type: text("type").notNull().default("stock"), // stock | crypto | etf | index
   addedAt: text("added_at").notNull(),
-});
-export const insertWatchlistSchema = createInsertSchema(watchlist).omit({ id: true });
-export type InsertWatchlist = z.infer<typeof insertWatchlistSchema>;
-export type Watchlist = typeof watchlist.$inferSelect;
+})
+
+export const insertWatchlistSchema = createInsertSchema(watchlist)
+export type InsertWatchlist = Omit<typeof watchlist.$inferInsert, "id">
+export type Watchlist = typeof watchlist.$inferSelect
