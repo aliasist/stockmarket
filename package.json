@@ -2,21 +2,32 @@
   "name": "market-pulse-pedagogy",
   "version": "1.0.0",
   "description": "Market Pulse & Pedagogy — Stock dashboard with AI features",
-  "main": "server/index.js",
+  "type": "module",
+  "main": "dist/index.js",
   "scripts": {
-    "start": "node server/index.js",
-    "dev": "node --watch server/index.js"
+    "dev": "tsx server/index.ts",
+    "build": "tsc",
+    "start": "NODE_ENV=production node dist/index.js"
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
-    "better-sqlite3": "^9.6.0",
+    "better-sqlite3": "^11.10.0",
     "cors": "^2.8.5",
     "express": "^4.19.2",
     "node-cron": "^3.0.3",
     "node-fetch": "^3.3.2",
     "yahoo-finance2": "^2.11.3"
   },
+  "devDependencies": {
+    "@types/better-sqlite3": "^9.4.0",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.12.12",
+    "@types/node-cron": "^3.0.11",
+    "tsx": "^4.10.5",
+    "typescript": "^5.4.5"
+  },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.0.0"
   }
 }
