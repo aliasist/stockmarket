@@ -5,11 +5,18 @@ import { storage } from "./storage";
 import { runScrub } from "./scrubEngine";
 import { generateEli5, generatePredictiveReasoning } from "./geminiService";
 import { getQuotes, getChart } from "./marketData";
-import { generateEli5WithCF, cloudflareAvailable } from "./cloudflareService";
+import { generateEli5WithCF, cloudflareAvailable, initD1Tables, d1Available } from "./cloudflareService";
 
 const GEMINI_KEY = process.env.GEMINI_API_KEY || "";
 
 export async function registerRoutes(httpServer: Server, app: Express): Promise<void> {
+  // ── Initialize Cloudflare D1 tables if available ───────────────────────
+  if (d1Available()) {
+    initD1Tables().then(() => {
+      console.log("[CF D1] Database ready");
+    }).catch(console.error);
+  }
+
   // ── Schedule 15-minute scrub ─────────────────────────────────────────────
   cron.schedule("*/15 * * * *", () => {
     console.log("[Scrub] Starting scheduled scrub...");
@@ -22,6 +29,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       status: "ok",
       geminiConfigured: !!GEMINI_KEY,
       cloudflareConfigured: cloudflareAvailable(),
+      d1Connected: d1Available(),
       timestamp: new Date().toISOString()
     });
   });
@@ -96,7 +104,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   });
 
   // ── News Feed ─────────────────────────────────────────────────────────────
-  app.get("/api/news", (_req, res) => {
+  app.get("/api/news", (req, res) => {
     const limit = parseInt(req.query.limit as string) || 50;
     res.json(storage.getLatestNews(limit));
   });
