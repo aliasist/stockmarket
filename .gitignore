@@ -1,9 +1,6 @@
-node_modules
-dist
-.DS_Store
-server/public
-vite.config.ts.*
-*.tar.gz
-*.db
-*.db-shm
-*.db-wal
+node_modules/
+market_pulse.db
+market_pulse.db-wal
+market_pulse.db-shm
+.env
+*.log
