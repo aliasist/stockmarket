@@ -5,6 +5,7 @@ import { storage } from "./storage";
 import { runScrub } from "./scrubEngine";
 import { generateEli5, generatePredictiveReasoning } from "./geminiService";
 import { getQuotes, getChart } from "./marketData";
+import { generateEli5WithCF, cloudflareAvailable } from "./cloudflareService";
 
 const GEMINI_KEY = process.env.GEMINI_API_KEY || "";
 
@@ -17,7 +18,12 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
 
   // ── Health ────────────────────────────────────────────────────────────────
   app.get("/api/health", (_req, res) => {
-    res.json({ status: "ok", geminiConfigured: !!GEMINI_KEY, timestamp: new Date().toISOString() });
+    res.json({
+      status: "ok",
+      geminiConfigured: !!GEMINI_KEY,
+      cloudflareConfigured: cloudflareAvailable(),
+      timestamp: new Date().toISOString()
+    });
   });
 
   // ── Market Data ───────────────────────────────────────────────────────────
@@ -101,15 +107,22 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     const cached = storage.getEli5(term);
     if (cached) return res.json(cached);
 
-    if (!GEMINI_KEY) {
-      return res.json({
-        term,
-        explanation: `Imagine "${term}" is like a secret club rule at the playground. To get ELI5 explanations, please add your GEMINI_API_KEY!`,
-        createdAt: new Date().toISOString(),
-      });
+    let explanation: string | null = null;
+
+    // Try Cloudflare Workers AI first (faster, edge-based)
+    if (cloudflareAvailable()) {
+      explanation = await generateEli5WithCF(term);
     }
 
-    const explanation = await generateEli5(term, GEMINI_KEY);
+    // Fall back to Gemini if CF unavailable or failed
+    if (!explanation && GEMINI_KEY) {
+      explanation = await generateEli5(term, GEMINI_KEY);
+    }
+
+    if (!explanation) {
+      explanation = `Imagine "${term}" is like a secret club rule at the playground. Add GEMINI_API_KEY or CLOUDFLARE_API_TOKEN for real explanations!`;
+    }
+
     const saved = storage.saveEli5({ term: term.toLowerCase(), explanation, createdAt: new Date().toISOString() });
     res.json(saved);
   });
