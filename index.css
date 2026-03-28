@@ -1,0 +1,175 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Market Pulse Design System ─────────────────────────────────────────────
+   Finance dashboard: deep navy/slate surfaces, electric cyan accent,
+   amber for bullish, rose for bearish, emerald for success.
+   Dark-first design — markets are always on.
+*/
+
+@layer base {
+  :root {
+    /* Surfaces — deep alien purple-black */
+    --background: 260 30% 5%;
+    --foreground: 270 20% 92%;
+
+    --card: 258 28% 9%;
+    --card-foreground: 270 20% 92%;
+
+    --popover: 258 28% 9%;
+    --popover-foreground: 270 20% 92%;
+
+    /* Accent — electric purple */
+    --primary: 270 91% 65%;
+    --primary-foreground: 260 30% 5%;
+
+    --secondary: 258 25% 15%;
+    --secondary-foreground: 270 20% 92%;
+
+    --muted: 258 25% 12%;
+    --muted-foreground: 265 15% 50%;
+
+    --accent: 258 25% 15%;
+    --accent-foreground: 270 20% 92%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 270 20% 92%;
+
+    --border: 258 25% 16%;
+    --input: 258 25% 12%;
+    --ring: 270 91% 65%;
+
+    --radius: 0.5rem;
+
+    /* Font vars */
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+    --font-serif: Georgia, serif;
+
+    /* Sidebar vars */
+    --sidebar: 258 28% 9%;
+    --sidebar-foreground: 270 20% 92%;
+    --sidebar-border: 258 25% 16%;
+    --sidebar-ring: 270 91% 65%;
+    --sidebar-primary: 270 91% 65%;
+    --sidebar-primary-foreground: 260 30% 5%;
+    --sidebar-accent: 258 25% 15%;
+    --sidebar-accent-foreground: 270 20% 92%;
+
+    /* Chart colors */
+    --chart-1: 270 91% 65%;  /* purple — primary */
+    --chart-2: 142 71% 45%;  /* emerald — bullish */
+    --chart-3: 0 84% 60%;    /* rose — bearish */
+    --chart-4: 38 92% 55%;   /* amber — caution */
+    --chart-5: 191 97% 45%;  /* cyan — info */
+  }
+
+  /* Light mode override */
+  .light {
+    --background: 260 30% 97%;
+    --foreground: 258 40% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 258 40% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 258 40% 11%;
+    --primary: 270 80% 55%;
+    --primary-foreground: 260 30% 97%;
+    --secondary: 258 25% 94%;
+    --secondary-foreground: 258 40% 11%;
+    --muted: 258 25% 94%;
+    --muted-foreground: 258 15% 47%;
+    --accent: 258 25% 94%;
+    --accent-foreground: 258 40% 11%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 260 30% 97%;
+    --border: 258 20% 88%;
+    --input: 258 20% 88%;
+    --ring: 270 80% 55%;
+  }
+}
+
+@layer base {
+  * { @apply border-border; }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    font-variant-numeric: tabular-nums lining-nums;
+    overflow: hidden;
+  }
+  html { height: 100%; }
+}
+
+/* ── Dashboard Layout ───────────────────────────────────────────────────── */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  grid-template-rows: 1fr;
+  height: 100dvh;
+}
+
+.main-content {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* ── Ticker Tape ────────────────────────────────────────────────────────── */
+.ticker-tape {
+  animation: ticker-scroll 40s linear infinite;
+  white-space: nowrap;
+}
+.ticker-tape:hover { animation-play-state: paused; }
+@keyframes ticker-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* ── Signal Badge ────────────────────────────────────────────────────────── */
+.signal-bullish { @apply bg-emerald-500/15 text-emerald-400 border border-emerald-500/30; }
+.signal-bearish { @apply bg-rose-500/15 text-rose-400 border border-rose-500/30; }
+.signal-neutral { @apply bg-amber-500/15 text-amber-400 border border-amber-500/30; }
+
+/* ── Tone Badge ───────────────────────────────────────────────────────────── */
+.tone-fear { @apply bg-rose-500/15 text-rose-400 border border-rose-500/30; }
+.tone-speculative { @apply bg-amber-500/15 text-amber-400 border border-amber-500/30; }
+.tone-data { @apply bg-cyan-500/15 text-cyan-400 border border-cyan-500/30; }
+.tone-neutral { @apply bg-slate-500/15 text-slate-400 border border-slate-500/30; }
+
+/* ── ELI5 Mode ────────────────────────────────────────────────────────────── */
+.eli5-active {
+  background: linear-gradient(135deg, hsl(258 90% 8%) 0%, hsl(191 97% 5%) 100%);
+  border: 1px solid hsl(258 90% 40% / 0.4);
+}
+
+/* ── Confidence Bar ───────────────────────────────────────────────────────── */
+.confidence-fill {
+  transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── Number Glow on Change ────────────────────────────────────────────────── */
+.price-up { @apply text-emerald-400; animation: flash-green 0.4s ease; }
+.price-down { @apply text-rose-400; animation: flash-red 0.4s ease; }
+
+@keyframes flash-green {
+  0%, 100% { text-shadow: none; }
+  50% { text-shadow: 0 0 12px hsl(142 71% 45% / 0.6); }
+}
+@keyframes flash-red {
+  0%, 100% { text-shadow: none; }
+  50% { text-shadow: 0 0 12px hsl(0 84% 60% / 0.6); }
+}
+
+/* ── Skeleton ──────────────────────────────────────────────────────────────── */
+.skeleton {
+  @apply bg-muted rounded animate-pulse;
+}
+
+/* ── Scrollbar ────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { @apply bg-border rounded-full; }
+
+/* ── Sidebar Active ───────────────────────────────────────────────────────── */
+.sidebar-item-active {
+  @apply bg-primary/10 text-primary border-l-2 border-primary;
+}
