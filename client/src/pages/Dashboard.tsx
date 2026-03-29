@@ -38,7 +38,6 @@ export default function Dashboard() {
 
   const { data: quotes = [], isLoading: quotesLoading } = useQuery<Quote[]>({
     queryKey: ["/api/quotes"],
-    refetchInterval: 30000,
   });
 
   const { data: health } = useQuery({

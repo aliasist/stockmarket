@@ -14,7 +14,6 @@ export default function NewsPage() {
 
   const { data: articles = [] } = useQuery<NewsArticle[]>({
     queryKey: ["/api/news"],
-    refetchInterval: 60000,
   });
 
   const toneCounts = articles.reduce((acc: Record<string, number>, a) => {

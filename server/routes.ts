@@ -9,6 +9,40 @@ import { insertWatchlistSchema } from "../shared/schema.js"
 import nodeCron from "node-cron"
 import { getChart, getQuotes } from "./marketData.js"
 
+const PREDICTION_CACHE_TTL_MS = 5 * 60 * 1000
+
+type PredictionCacheEntry = {
+  expiresAt: number
+  value: unknown
+}
+
+const predictionCache = new Map<string, PredictionCacheEntry>()
+
+function getCachedPrediction(ticker: string): unknown | null {
+  const cached = predictionCache.get(ticker)
+  if (!cached) {
+    return null
+  }
+
+  if (cached.expiresAt <= Date.now()) {
+    predictionCache.delete(ticker)
+    return null
+  }
+
+  return cached.value
+}
+
+function setCachedPrediction(ticker: string, value: unknown): void {
+  predictionCache.set(ticker, {
+    value,
+    expiresAt: Date.now() + PREDICTION_CACHE_TTL_MS,
+  })
+}
+
+function clearPredictionCache(): void {
+  predictionCache.clear()
+}
+
 export async function registerRoutes(app: Express): Promise<void> {
   app.get("/api/health", (_req, res) => {
     res.json({
@@ -79,6 +113,11 @@ export async function registerRoutes(app: Express): Promise<void> {
     }
 
     try {
+      const cachedPrediction = getCachedPrediction(ticker)
+      if (cachedPrediction) {
+        return res.json(cachedPrediction)
+      }
+
       const recentVectors = storage
         .getLatestVectors(30)
         .filter((vector) => !vector.ticker || vector.ticker === ticker)
@@ -94,6 +133,7 @@ export async function registerRoutes(app: Express): Promise<void> {
         process.env.GEMINI_API_KEY
       )
 
+      setCachedPrediction(ticker, prediction)
       res.json(prediction)
     } catch (error) {
       console.error(`Failed to generate prediction for ${ticker}:`, error)
@@ -181,12 +221,14 @@ export async function registerRoutes(app: Express): Promise<void> {
   })
 
   app.post("/api/scrub/trigger", async (_req, res) => {
+    clearPredictionCache()
     void runScrub(process.env.GEMINI_API_KEY).catch(console.error)
     res.json({ message: "Scrub triggered" })
   })
 
   nodeCron.schedule("*/15 * * * *", () => {
     console.log("Running scheduled market scrub...")
+    clearPredictionCache()
     void runScrub(process.env.GEMINI_API_KEY).catch(console.error)
   })
 }
