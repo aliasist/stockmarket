@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
+import { useWebSocketQuotes } from "@/hooks/use-websocket-quotes";
 
 interface Quote {
   ticker: string;
@@ -9,10 +10,15 @@ interface Quote {
 }
 
 export default function TickerTape() {
-  const { data: quotes = [] } = useQuery<Quote[]>({
+  const { quotes: wsQuotes, connectionState } = useWebSocketQuotes();
+  const wsConnected = connectionState === "connected";
+
+  const { data: polledQuotes = [] } = useQuery<Quote[]>({
     queryKey: ["/api/quotes"],
-    refetchInterval: 30000,
+    refetchInterval: wsConnected ? false : 30000,
   });
+
+  const quotes = wsConnected && wsQuotes.length > 0 ? wsQuotes : polledQuotes;
 
   if (quotes.length === 0) return null;
 

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { RefreshCw, Zap } from "lucide-react";
+import { RefreshCw, Zap, Wifi, WifiOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Sidebar from "../components/Sidebar";
 import TickerTape from "../components/TickerTape";
@@ -11,6 +11,7 @@ import NewsFeed from "../components/NewsFeed";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { useWebSocketQuotes } from "@/hooks/use-websocket-quotes";
 
 interface Quote {
   ticker: string;
@@ -36,9 +37,18 @@ export default function Dashboard() {
   const qc = useQueryClient();
   const { toast } = useToast();
 
-  const { data: quotes = [], isLoading: quotesLoading } = useQuery<Quote[]>({
+  // Real-time quotes via WebSocket; fall back to polling if disconnected
+  const { quotes: wsQuotes, connectionState } = useWebSocketQuotes();
+  const wsConnected = connectionState === "connected";
+
+  const { data: polledQuotes = [], isLoading: quotesLoading } = useQuery<Quote[]>({
     queryKey: ["/api/quotes"],
+    // Poll every 10s when WebSocket is not connected
+    refetchInterval: wsConnected ? false : 10_000,
   });
+
+  // Prefer WebSocket quotes when connected, fall back to polled
+  const quotes = wsConnected && wsQuotes.length > 0 ? wsQuotes : polledQuotes;
 
   const { data: health } = useQuery({
     queryKey: ["/api/health"],
@@ -80,6 +90,18 @@ export default function Dashboard() {
             </p>
           </div>
           <div className="flex items-center gap-2">
+            {/* WebSocket connection indicator */}
+            <div className={cn(
+              "flex items-center gap-1 text-xs px-2 py-1 rounded-md border",
+              wsConnected
+                ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/30"
+                : connectionState === "connecting"
+                ? "text-amber-400 bg-amber-500/10 border-amber-500/30"
+                : "text-muted-foreground bg-muted border-border"
+            )}>
+              {wsConnected ? <Wifi size={10} /> : <WifiOff size={10} />}
+              {wsConnected ? "Live" : connectionState === "connecting" ? "Connecting…" : "Polling"}
+            </div>
             {h && !h.geminiConfigured && (
               <div className="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2 py-1 rounded-md">
                 Set GEMINI_API_KEY for AI features

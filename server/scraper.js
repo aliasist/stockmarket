@@ -16,7 +16,7 @@
  */
 
 const { db_scrub, db_articles, db_vectors } = require('./db');
-const { classifyTone, generateVector } = require('./gemini');
+const { classifyTone, generateVector, classifyToneWithScore } = require('./gemini');
 
 // Use native fetch (Node 18+) or fall back to node-fetch
 const fetchImpl =
@@ -233,8 +233,9 @@ async function scrapeYahooFinance(limit = 10) {
 // ─── Tone classification (batch with rate limiting) ────────────────────────────
 
 /**
- * Classify tones for a batch of articles.
+ * Classify tones and compute sentiment scores for a batch of articles.
  * Processes in small batches to avoid overwhelming Gemini.
+ * sentiment_score: 0.0 = very bearish/negative, 1.0 = very bullish/positive, 0.5 = neutral
  */
 async function classifyArticles(articles) {
   const BATCH_SIZE = 5;
@@ -245,16 +246,21 @@ async function classifyArticles(articles) {
     const classified = await Promise.allSettled(
       batch.map(async (article) => {
         try {
+          // Use enhanced classification with sentiment score when available
+          if (typeof classifyToneWithScore === 'function') {
+            const { tone, sentiment_score } = await classifyToneWithScore(article.title, article.summary);
+            return { ...article, tone, sentiment_score };
+          }
           const tone = await classifyTone(article.title, article.summary);
-          return { ...article, tone };
+          return { ...article, tone, sentiment_score: toneToScore(tone) };
         } catch {
-          return { ...article, tone: 'neutral' };
+          return { ...article, tone: 'neutral', sentiment_score: 0.5 };
         }
       })
     );
     for (const r of classified) {
       results.push(
-        r.status === 'fulfilled' ? r.value : { ...batch[results.length % BATCH_SIZE], tone: 'neutral' }
+        r.status === 'fulfilled' ? r.value : { ...batch[results.length % BATCH_SIZE], tone: 'neutral', sentiment_score: 0.5 }
       );
     }
     // Small delay between batches
@@ -263,6 +269,20 @@ async function classifyArticles(articles) {
     }
   }
   return results;
+}
+
+/**
+ * Map a tone label to a default sentiment score.
+ * fear_mongering → 0.1 (very negative), speculative → 0.4, neutral → 0.5, data_backed → 0.65
+ */
+function toneToScore(tone) {
+  const map = {
+    fear_mongering: 0.1,
+    speculative: 0.4,
+    neutral: 0.5,
+    data_backed: 0.65,
+  };
+  return map[tone] ?? 0.5;
 }
 
 // ─── Main scrub runner ─────────────────────────────────────────────────────────
@@ -314,6 +334,7 @@ async function runScrub() {
       source: a.source,
       summary: a.summary || null,
       tone: a.tone || 'neutral',
+      sentiment_score: typeof a.sentiment_score === 'number' ? a.sentiment_score : 0.5,
       publishedAt: a.publishedAt || null,
     }));
     db_articles.insertMany(articlesForDB);
