@@ -167,28 +167,6 @@ export default function SettingsPage() {
             </div>
           </section>
 
-          <section>
-            <h2 className="theme-kicker mb-3">Deployment</h2>
-            <div className="theme-panel rounded-2xl p-4 space-y-3 text-xs text-muted-foreground">
-              <div>
-                <span className="text-foreground font-medium">Vercel Deployment</span><br />
-                Connect your GitHub repo at{" "}
-                <a href="https://vercel.com/new" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                  vercel.com/new
-                </a>
-                , then add <code className="bg-muted px-1 rounded text-foreground">GEMINI_API_KEY</code> in Environment Variables.
-              </div>
-              <div>
-                <span className="text-foreground font-medium">Supabase (optional upgrade)</span><br />
-                To replace SQLite with Supabase Postgres for cloud-persistent memory, set{" "}
-                <code className="bg-muted px-1 rounded text-foreground">DATABASE_URL</code> to your Supabase connection string.
-                Free tier at{" "}
-                <a href="https://supabase.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                  supabase.com
-                </a>.
-              </div>
-            </div>
-          </section>
         </div>
       </div>
     </div>
