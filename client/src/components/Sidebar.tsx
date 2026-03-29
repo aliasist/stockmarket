@@ -2,12 +2,14 @@ import { Link } from "wouter";
 import { useHashLocation } from "wouter/use-hash-location";
 import {
   LayoutDashboard, Newspaper, TrendingUp, Settings,
-  Activity, Zap, Brain, Moon, SunMedium
+  Activity, Zap, Brain, Moon, SunMedium, LogOut, User
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { useTheme } from "./theme-provider";
+import { logout } from "@/lib/auth";
+import type { AuthUser } from "@/lib/auth";
 
 interface ScrubRun {
   id: number;
@@ -23,9 +25,10 @@ const navItems = [
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
-export default function Sidebar({ eli5Mode, onToggleEli5 }: {
+export default function Sidebar({ eli5Mode, onToggleEli5, user }: {
   eli5Mode: boolean;
   onToggleEli5: () => void;
+  user?: AuthUser | null;
 }) {
   const [loc] = useHashLocation();
   const { theme, toggleTheme } = useTheme();
@@ -129,6 +132,25 @@ export default function Sidebar({ eli5Mode, onToggleEli5 }: {
           </p>
         )}
       </div>
+
+      {/* User info + logout */}
+      {user && (
+        <div className="p-3 border-t border-border">
+          <div className="flex items-center gap-2 px-1 mb-2">
+            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/15 shrink-0">
+              <User size={13} className="text-primary" />
+            </div>
+            <span className="text-xs text-muted-foreground truncate flex-1">{user.email}</span>
+          </div>
+          <button
+            onClick={() => logout()}
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm transition-all border bg-muted/50 text-muted-foreground border-border hover:text-rose-400 hover:bg-rose-500/10 hover:border-rose-500/30"
+          >
+            <LogOut size={14} />
+            <span className="flex-1 text-left">Sign Out</span>
+          </button>
+        </div>
+      )}
 
       <div className="p-3 border-t border-border">
         <div className="text-xs text-muted-foreground">

@@ -11,6 +11,8 @@ import NewsFeed from "../components/NewsFeed";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { getUser } from "@/lib/auth";
+import type { AuthUser } from "@/lib/auth";
 
 interface Quote {
   ticker: string;
@@ -33,8 +35,14 @@ interface ScrubRun {
 export default function Dashboard() {
   const [eli5Mode, setEli5Mode] = useState(false);
   const [selectedTicker, setSelectedTicker] = useState("SPY");
+  const [user, setUser] = useState<AuthUser | null>(null);
   const qc = useQueryClient();
   const { toast } = useToast();
+
+  // Load current user for sidebar display
+  useState(() => {
+    getUser().then(setUser);
+  });
 
   const { data: quotes = [], isLoading: quotesLoading } = useQuery<Quote[]>({
     queryKey: ["/api/quotes"],
@@ -57,7 +65,7 @@ export default function Dashboard() {
 
   return (
     <div className="dashboard-grid app-shell">
-      <Sidebar eli5Mode={eli5Mode} onToggleEli5={() => setEli5Mode(!eli5Mode)} />
+      <Sidebar eli5Mode={eli5Mode} onToggleEli5={() => setEli5Mode(!eli5Mode)} user={user} />
 
       <div className="main-content flex flex-col">
         <TickerTape />
