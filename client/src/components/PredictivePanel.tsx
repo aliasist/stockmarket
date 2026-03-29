@@ -51,15 +51,14 @@ export default function PredictivePanel({ ticker, eli5Mode }: { ticker: string; 
   const isLoading = predLoading || vecLoading;
 
   return (
-    <div className={cn("rounded-lg border p-4 space-y-4", eli5Mode ? "eli5-active" : "bg-card border-border")}>
-      {/* Header */}
+    <div className={cn("rounded-2xl border p-4 space-y-4", eli5Mode ? "eli5-active" : "theme-panel")}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Brain size={16} className={eli5Mode ? "text-purple-400" : "text-primary"} />
+          <Brain size={16} className="text-primary" />
           <span className="text-sm font-semibold">
             {eli5Mode ? "🧠 What's the Market Thinking?" : "Predictive Reasoning"}
           </span>
-          {eli5Mode && <span className="text-xs text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded-full">ELI5</span>}
+          {eli5Mode && <span className="text-xs text-primary bg-primary/10 px-2 py-0.5 rounded-full">ELI5</span>}
         </div>
         <button
           data-testid="button-refresh-prediction"
@@ -70,7 +69,6 @@ export default function PredictivePanel({ ticker, eli5Mode }: { ticker: string; 
         </button>
       </div>
 
-      {/* Prediction Result */}
       {isLoading ? (
         <div className="space-y-2">
           <div className="skeleton h-10 rounded" />
@@ -78,7 +76,6 @@ export default function PredictivePanel({ ticker, eli5Mode }: { ticker: string; 
         </div>
       ) : prediction ? (
         <div className="space-y-3">
-          {/* Signal bar */}
           <div className="flex items-center gap-3">
             <SignalIcon signal={prediction.prediction} size={20} />
             <div className="flex-1">
@@ -91,7 +88,6 @@ export default function PredictivePanel({ ticker, eli5Mode }: { ticker: string; 
                   {prediction.timeframe}
                 </div>
               </div>
-              {/* Confidence bar */}
               <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                 <div
                   className={cn("h-full rounded-full confidence-fill", confidenceBg(prediction.prediction))}
@@ -104,19 +100,17 @@ export default function PredictivePanel({ ticker, eli5Mode }: { ticker: string; 
             </div>
           </div>
 
-          {/* Reasoning */}
           <div className={cn(
             "text-sm leading-relaxed p-3 rounded-md",
-            eli5Mode ? "bg-purple-500/10 text-purple-100" : "bg-muted/50 text-foreground/80"
+            eli5Mode ? "bg-primary/10 text-foreground" : "bg-muted/50 text-foreground/80"
           )}>
             {prediction.reasoning}
           </div>
         </div>
       ) : null}
 
-      {/* Market Vectors */}
       <div>
-        <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+        <div className="theme-kicker mb-2">
           {eli5Mode ? "What Signals Are We Seeing?" : "Logical Market Vectors"}
         </div>
         {vecLoading ? (
@@ -130,7 +124,7 @@ export default function PredictivePanel({ ticker, eli5Mode }: { ticker: string; 
         ) : (
           <div className="space-y-2">
             {tickerVectors.map((v) => (
-              <div key={v.id} className="p-2.5 rounded-md bg-muted/30 border border-border/50">
+              <div key={v.id} className="p-2.5 rounded-xl bg-muted/30 border border-border/50">
                 <div className="flex items-center justify-between mb-1">
                   <div className="flex items-center gap-1.5">
                     <SignalIcon signal={v.signal} size={12} />
@@ -151,10 +145,9 @@ export default function PredictivePanel({ ticker, eli5Mode }: { ticker: string; 
         )}
       </div>
 
-      {/* ELI5 Term Glossary */}
       {eli5Mode && (
-        <div className="border-t border-purple-500/20 pt-3">
-          <div className="text-xs font-semibold text-purple-400 mb-2">Tap a term to learn it:</div>
+        <div className="border-t border-primary/20 pt-3">
+          <div className="text-xs font-semibold text-primary mb-2">Tap a term to learn it:</div>
           <div className="flex flex-wrap gap-1.5">
             {FINANCIAL_TERMS.map((term) => (
               <Eli5Tooltip key={term} term={term} />

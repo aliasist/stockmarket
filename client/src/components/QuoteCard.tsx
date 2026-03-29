@@ -37,15 +37,15 @@ export default function QuoteCard({ quote, onClick, active, eli5Mode }: Props) {
       data-testid={`card-quote-${quote.ticker}`}
       onClick={onClick}
       className={cn(
-        "w-full text-left p-4 rounded-lg border transition-all",
+        "theme-panel-soft w-full text-left p-4 rounded-2xl transition-all hover:-translate-y-0.5",
         active
-          ? "border-primary/50 bg-primary/5"
-          : "border-border bg-card hover:border-border/80 hover:bg-accent/30"
+          ? "border-primary/50 bg-primary/8 shadow-[0_0_0_1px_rgba(180,117,255,0.18),0_20px_40px_rgba(18,10,36,0.35)]"
+          : "hover:border-primary/20 hover:bg-accent/40"
       )}
     >
       <div className="flex items-start justify-between mb-2">
         <div>
-          <div className="text-xs font-bold text-muted-foreground">{quote.ticker}</div>
+          <div className="text-[11px] font-bold uppercase tracking-[0.24em] text-primary/75">{quote.ticker}</div>
           <div className="text-sm font-medium text-foreground leading-tight mt-0.5">
             {eli5Mode ? (eli5Names[quote.ticker] || quote.name) : quote.name}
           </div>

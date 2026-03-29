@@ -1,7 +1,7 @@
 import { drizzle } from "drizzle-orm/better-sqlite3"
 import Database from "better-sqlite3"
 import { eq, desc } from "drizzle-orm"
-import * as schema from "@shared/schema.js"
+import * as schema from "../shared/schema.js"
 import {
   scrubRuns,
   marketVectors,
@@ -18,7 +18,7 @@ import {
   type InsertEli5Cache,
   type Watchlist,
   type InsertWatchlist,
-} from "@shared/schema.js"
+} from "../shared/schema.js"
 
 const sqlite = new Database("market_pulse.db")
 const db = drizzle(sqlite, { schema })

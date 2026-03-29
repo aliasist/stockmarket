@@ -17,8 +17,6 @@ interface NewsArticle {
   ticker?: string;
 }
 
-const TONES = ["all", "fear_mongering", "speculative", "data_backed", "neutral"] as const;
-
 const toneConfig: Record<string, { label: string; icon: typeof AlertTriangle; class: string }> = {
   fear_mongering: { label: "Fear", icon: AlertTriangle, class: "tone-fear" },
   speculative: { label: "Speculative", icon: HelpCircle, class: "tone-speculative" },
@@ -41,27 +39,25 @@ export default function NewsFeed({ compact = false, eli5Mode = false }: { compac
   const displayed = compact ? filtered.slice(0, 8) : filtered;
 
   return (
-    <div className="bg-card border border-border rounded-lg overflow-hidden">
-      {/* Header */}
+    <div className="theme-panel rounded-2xl overflow-hidden">
       <div className="flex items-center justify-between px-4 py-3 border-b border-border">
         <span className="text-sm font-semibold">
           {eli5Mode ? "📰 What's in the News?" : "Journalism Intelligence Feed"}
         </span>
-        <Badge variant="outline" className="text-xs">
+        <Badge variant="outline" className="text-xs border-primary/20 bg-primary/5 text-primary">
           {articles.length} stories
         </Badge>
       </div>
 
-      {/* Tone Filters */}
       {!compact && (
         <div className="flex gap-1.5 px-4 py-2 border-b border-border overflow-x-auto">
           <button
             onClick={() => setToneFilter("all")}
             className={cn(
-              "text-xs px-2.5 py-1 rounded-full whitespace-nowrap transition-colors",
+              "text-xs px-2.5 py-1 rounded-full whitespace-nowrap transition-colors border border-transparent",
               toneFilter === "all"
-                ? "bg-primary/20 text-primary"
-                : "text-muted-foreground hover:text-foreground bg-muted"
+                ? "bg-primary/15 text-primary border-primary/30"
+                : "text-muted-foreground hover:text-foreground bg-muted border-border/60"
             )}
           >
             All
@@ -72,8 +68,8 @@ export default function NewsFeed({ compact = false, eli5Mode = false }: { compac
               data-testid={`button-filter-${key}`}
               onClick={() => setToneFilter(key)}
               className={cn(
-                "text-xs px-2.5 py-1 rounded-full whitespace-nowrap transition-colors",
-                toneFilter === key ? cfg.class : "text-muted-foreground hover:text-foreground bg-muted"
+                "text-xs px-2.5 py-1 rounded-full whitespace-nowrap transition-colors border border-transparent",
+                toneFilter === key ? cfg.class : "text-muted-foreground hover:text-foreground bg-muted border-border/60"
               )}
             >
               {cfg.label}
@@ -82,7 +78,6 @@ export default function NewsFeed({ compact = false, eli5Mode = false }: { compac
         </div>
       )}
 
-      {/* Articles */}
       <ScrollArea className={compact ? "h-72" : "h-[500px]"}>
         {isLoading ? (
           <div className="p-4 space-y-3">
@@ -114,10 +109,10 @@ export default function NewsFeed({ compact = false, eli5Mode = false }: { compac
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5 mb-1 flex-wrap">
-                        <span className={cn("inline-flex items-center gap-1 text-xs px-1.5 py-0.5 rounded", cfg.class)}>
-                          <Icon size={9} />
-                          {eli5Mode ? eli5Tone(tone) : cfg.label}
-                        </span>
+                          <span className={cn("inline-flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-full", cfg.class)}>
+                            <Icon size={9} />
+                            {eli5Mode ? eli5Tone(tone) : cfg.label}
+                          </span>
                         <span className="text-xs text-muted-foreground capitalize">
                           {sourceLabel(article.source)}
                         </span>

@@ -13,7 +13,10 @@ import type {
 
 import { cn } from "@/lib/utils"
 
-const THEMES = { light: "", dark: ".dark" } as const
+const THEMES = {
+  normal: ':root[data-theme="normal"]',
+  dark: ':root[data-theme="dark"]',
+} as const
 
 export type ChartConfig = {
   [k in string]: {

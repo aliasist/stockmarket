@@ -46,9 +46,12 @@ export default function PriceChart({ ticker }: { ticker: string }) {
   const gradientId = `gradient-${ticker}-${rangeIdx}`;
 
   return (
-    <div className="bg-card border border-border rounded-lg p-4">
+    <div className="theme-panel rounded-2xl p-4">
       <div className="flex items-center justify-between mb-3">
-        <div className="text-sm font-semibold text-foreground">{ticker} — Price</div>
+        <div>
+          <div className="theme-kicker mb-1">Price Action</div>
+          <div className="text-base font-semibold text-foreground">{ticker} Price</div>
+        </div>
         <div className="flex gap-1">
           {RANGES.map((r, i) => (
             <button
@@ -56,10 +59,10 @@ export default function PriceChart({ ticker }: { ticker: string }) {
               data-testid={`button-range-${r.label.toLowerCase()}`}
               onClick={() => setRangeIdx(i)}
               className={cn(
-                "text-xs px-2 py-1 rounded transition-colors",
+                "text-xs px-2.5 py-1 rounded-full transition-colors border border-transparent",
                 i === rangeIdx
-                  ? "bg-primary/20 text-primary font-medium"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-primary/15 text-primary font-medium border-primary/30"
+                  : "text-muted-foreground hover:text-foreground hover:bg-accent/70"
               )}
             >
               {r.label}
@@ -98,13 +101,13 @@ export default function PriceChart({ ticker }: { ticker: string }) {
             />
             <Tooltip
               contentStyle={{
-                background: "hsl(222 40% 10%)",
-                border: "1px solid hsl(217 33% 18%)",
-                borderRadius: 6,
+                background: "hsl(257 29% 11% / 0.95)",
+                border: "1px solid hsl(258 22% 22%)",
+                borderRadius: 12,
                 fontSize: 12,
               }}
               formatter={(v: number) => ["$" + v.toFixed(2), "Price"]}
-              labelStyle={{ color: "hsl(215 20% 50%)" }}
+              labelStyle={{ color: "hsl(256 13% 69%)" }}
             />
             <Area
               type="monotone"

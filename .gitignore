@@ -5,3 +5,4 @@ market_pulse.db-shm
 .env
 *.log
 .aider*
+.codex

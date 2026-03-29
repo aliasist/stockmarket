@@ -31,15 +31,16 @@ export default function NewsPage() {
   ];
 
   return (
-    <div className="dashboard-grid">
+    <div className="dashboard-grid app-shell">
       <Sidebar eli5Mode={eli5Mode} onToggleEli5={() => setEli5Mode(!eli5Mode)} />
       <div className="main-content flex flex-col">
         <TickerTape />
-        <div className="px-6 py-4 border-b border-border">
-          <h1 className="text-lg font-bold text-foreground">
+        <div className="theme-topbar px-6 py-4 border-b border-border">
+          <div className="theme-kicker mb-1">Narrative Scanner</div>
+          <h1 className="theme-title text-2xl text-foreground">
             {eli5Mode ? "📰 The News Sorter" : "Journalism Intelligence Feed"}
           </h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <p className="text-sm text-muted-foreground mt-1">
             {eli5Mode
               ? "We sort news like candy — yummy facts, scary stories, and wild guesses!"
               : "AI-classified news articles sorted by tone and intent"}
@@ -47,14 +48,13 @@ export default function NewsPage() {
         </div>
 
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          {/* Stats */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {stats.map((s) => {
               const Icon = s.icon;
               const count = toneCounts[s.key] || 0;
               const pct = articles.length > 0 ? Math.round((count / articles.length) * 100) : 0;
               return (
-                <div key={s.key} className="bg-card border border-border rounded-lg p-4">
+                <div key={s.key} className="theme-panel rounded-2xl p-4">
                   <div className={`inline-flex items-center gap-1.5 text-xs px-2 py-1 rounded-md mb-2 ${s.color}`}>
                     <Icon size={11} />
                     {eli5Mode ? eli5ToneLabel(s.key) : s.label}

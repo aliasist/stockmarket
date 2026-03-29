@@ -8,20 +8,23 @@ import NewsPage from "./pages/NewsPage";
 import VectorsPage from "./pages/VectorsPage";
 import SettingsPage from "./pages/SettingsPage";
 import NotFound from "./pages/not-found";
+import { ThemeProvider } from "./components/theme-provider";
 
 export default function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <Router hook={useHashLocation}>
-        <Switch>
-          <Route path="/" component={Dashboard} />
-          <Route path="/news" component={NewsPage} />
-          <Route path="/vectors" component={VectorsPage} />
-          <Route path="/settings" component={SettingsPage} />
-          <Route component={NotFound} />
-        </Switch>
-      </Router>
-      <Toaster />
-    </QueryClientProvider>
+    <ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <Router hook={useHashLocation}>
+          <Switch>
+            <Route path="/" component={Dashboard} />
+            <Route path="/news" component={NewsPage} />
+            <Route path="/vectors" component={VectorsPage} />
+            <Route path="/settings" component={SettingsPage} />
+            <Route component={NotFound} />
+          </Switch>
+        </Router>
+        <Toaster />
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 }

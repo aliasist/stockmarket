@@ -48,20 +48,20 @@ export default function SettingsPage() {
   });
 
   return (
-    <div className="dashboard-grid">
+    <div className="dashboard-grid app-shell">
       <Sidebar eli5Mode={eli5Mode} onToggleEli5={() => setEli5Mode(!eli5Mode)} />
       <div className="main-content flex flex-col">
         <TickerTape />
-        <div className="px-6 py-4 border-b border-border">
-          <h1 className="text-lg font-bold text-foreground">Settings</h1>
-          <p className="text-xs text-muted-foreground">Configure your watchlist and API keys</p>
+        <div className="theme-topbar px-6 py-4 border-b border-border">
+          <div className="theme-kicker mb-1">Control Room</div>
+          <h1 className="theme-title text-2xl text-foreground">Settings</h1>
+          <p className="text-sm text-muted-foreground mt-1">Configure your watchlist and API keys</p>
         </div>
 
         <div className="flex-1 overflow-y-auto p-6 space-y-8 max-w-2xl">
-          {/* API Status */}
           <section>
-            <h2 className="text-sm font-semibold mb-3">API Configuration</h2>
-            <div className="bg-card border border-border rounded-lg divide-y divide-border">
+            <h2 className="theme-kicker mb-3">API Configuration</h2>
+            <div className="theme-panel rounded-2xl divide-y divide-border">
               <div className="flex items-center justify-between p-4">
                 <div>
                   <div className="text-sm font-medium">Gemini API Key</div>
@@ -106,11 +106,9 @@ export default function SettingsPage() {
             </div>
           </section>
 
-          {/* Watchlist */}
           <section>
-            <h2 className="text-sm font-semibold mb-3">Watchlist</h2>
+            <h2 className="theme-kicker mb-3">Watchlist</h2>
 
-            {/* Add */}
             <div className="flex gap-2 mb-4">
               <Input
                 data-testid="input-ticker"
@@ -147,8 +145,7 @@ export default function SettingsPage() {
               </Button>
             </div>
 
-            {/* List */}
-            <div className="bg-card border border-border rounded-lg divide-y divide-border">
+            <div className="theme-panel rounded-2xl divide-y divide-border">
               {watchlist.map((item) => (
                 <div key={item.id} className="flex items-center justify-between p-3">
                   <div className="flex items-center gap-3">
@@ -170,10 +167,9 @@ export default function SettingsPage() {
             </div>
           </section>
 
-          {/* Supabase / Vercel notes */}
           <section>
-            <h2 className="text-sm font-semibold mb-3">Deployment</h2>
-            <div className="bg-card border border-border rounded-lg p-4 space-y-3 text-xs text-muted-foreground">
+            <h2 className="theme-kicker mb-3">Deployment</h2>
+            <div className="theme-panel rounded-2xl p-4 space-y-3 text-xs text-muted-foreground">
               <div>
                 <span className="text-foreground font-medium">Vercel Deployment</span><br />
                 Connect your GitHub repo at{" "}

@@ -20,12 +20,12 @@ export default function TickerTape() {
   const items = [...quotes, ...quotes];
 
   return (
-    <div className="bg-card border-b border-border overflow-hidden py-1.5">
+    <div className="theme-topbar border-b border-border overflow-hidden py-2">
       <div className="ticker-tape inline-flex gap-8">
         {items.map((q, i) => (
           <span key={i} className="inline-flex items-center gap-2 text-xs whitespace-nowrap">
-            <span className="font-bold text-foreground">{q.ticker}</span>
-            <span className="font-mono">{formatPrice(q.price)}</span>
+            <span className="font-bold text-primary/90">{q.ticker}</span>
+            <span className="font-mono text-foreground/90">{formatPrice(q.price)}</span>
             <span className={cn(
               "font-mono",
               q.change >= 0 ? "text-emerald-400" : "text-rose-400"

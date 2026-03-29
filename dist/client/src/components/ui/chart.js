@@ -3,7 +3,10 @@ import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-run
 import * as React from "react";
 import * as RechartsPrimitive from "recharts";
 import { cn } from "@/lib/utils";
-const THEMES = { light: "", dark: ".dark" };
+const THEMES = {
+    normal: ':root[data-theme="normal"]',
+    dark: ':root[data-theme="dark"]',
+};
 const ChartContext = React.createContext(null);
 function useChart() {
     const context = React.useContext(ChartContext);

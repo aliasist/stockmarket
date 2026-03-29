@@ -57,23 +57,24 @@ export default function Dashboard() {
   const h = health as any;
 
   return (
-    <div className="dashboard-grid">
+    <div className="dashboard-grid app-shell">
       <Sidebar eli5Mode={eli5Mode} onToggleEli5={() => setEli5Mode(!eli5Mode)} />
 
       <div className="main-content flex flex-col">
-        {/* Ticker Tape */}
         <TickerTape />
 
-        {/* Top Bar */}
         <div className={cn(
-          "flex items-center justify-between px-6 py-3 border-b border-border",
-          eli5Mode && "bg-purple-900/10"
+          "theme-topbar flex items-center justify-between px-6 py-4 border-b border-border",
+          eli5Mode && "eli5-active"
         )}>
           <div>
-            <h1 className="text-lg font-bold text-foreground">
+            <div className="theme-kicker mb-1">
+              {eli5Mode ? "Learning Interface" : "Aliasist-Inspired Trading Console"}
+            </div>
+            <h1 className="theme-title text-2xl text-foreground">
               {eli5Mode ? "🎓 Market School Dashboard" : "Market Pulse Dashboard"}
             </h1>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               {eli5Mode
                 ? "Learning Mode Active — we'll explain everything like you're 5!"
                 : "Real-time analytics · Recursive scrub every 15 min"}
@@ -91,7 +92,7 @@ export default function Dashboard() {
               variant="outline"
               onClick={() => triggerScrub.mutate()}
               disabled={triggerScrub.isPending}
-              className="text-xs gap-1.5"
+              className="text-xs gap-1.5 border-primary/30 bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary"
             >
               {triggerScrub.isPending ? (
                 <RefreshCw size={12} className="animate-spin" />
@@ -103,11 +104,9 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Main Content */}
         <div className="flex-1 overflow-y-auto overscroll-contain p-6 space-y-6">
-          {/* Quote Cards */}
           <section>
-            <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+            <div className="theme-kicker mb-3">
               {eli5Mode ? "Your Toy Box" : "Watchlist"}
             </div>
             {quotesLoading ? (
@@ -129,7 +128,6 @@ export default function Dashboard() {
             )}
           </section>
 
-          {/* Chart + Predictive Panel */}
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
             <div className="xl:col-span-2">
               <PriceChart ticker={selectedTicker} />
@@ -139,9 +137,8 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* News Feed */}
           <section>
-            <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+            <div className="theme-kicker mb-3">
               {eli5Mode ? "Today's Stories" : "Journalism Intelligence (Latest)"}
             </div>
             <NewsFeed compact eli5Mode={eli5Mode} />

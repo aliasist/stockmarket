@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import Sidebar from "../components/Sidebar";
 import TickerTape from "../components/TickerTape";
 import { TrendingUp, TrendingDown, Minus, Clock, Database } from "lucide-react";
@@ -45,15 +45,16 @@ export default function VectorsPage() {
   const neutral = vectors.filter((v) => v.signal === "neutral");
 
   return (
-    <div className="dashboard-grid">
+    <div className="dashboard-grid app-shell">
       <Sidebar eli5Mode={eli5Mode} onToggleEli5={() => setEli5Mode(!eli5Mode)} />
       <div className="main-content flex flex-col">
         <TickerTape />
-        <div className="px-6 py-4 border-b border-border">
-          <h1 className="text-lg font-bold text-foreground">
+        <div className="theme-topbar px-6 py-4 border-b border-border">
+          <div className="theme-kicker mb-1">Signal Mapping</div>
+          <h1 className="theme-title text-2xl text-foreground">
             {eli5Mode ? "🔭 The Signal Telescope" : "Logical Market Vectors"}
           </h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <p className="text-sm text-muted-foreground mt-1">
             {eli5Mode
               ? "We look at clues and find patterns — like finding candy wrappers to know where the candy is!"
               : "Cross-referenced signals from all scraped sources"}
@@ -61,14 +62,13 @@ export default function VectorsPage() {
         </div>
 
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          {/* Signal Summary */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[
               { label: "Bullish", list: bullish, color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/30", Icon: TrendingUp },
               { label: "Bearish", list: bearish, color: "text-rose-400", bg: "bg-rose-500/10 border-rose-500/30", Icon: TrendingDown },
               { label: "Neutral", list: neutral, color: "text-amber-400", bg: "bg-amber-500/10 border-amber-500/30", Icon: Minus },
             ].map((g) => (
-              <div key={g.label} className={cn("rounded-lg border p-4", g.bg)}>
+              <div key={g.label} className={cn("theme-panel rounded-2xl p-4", g.bg)}>
                 <div className="flex items-center gap-2 mb-1">
                   <g.Icon size={16} className={g.color} />
                   <span className={cn("text-sm font-semibold", g.color)}>{g.label}</span>
@@ -83,9 +83,8 @@ export default function VectorsPage() {
             ))}
           </div>
 
-          {/* Vectors List */}
           <div>
-            <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+            <div className="theme-kicker mb-3">
               All Vectors
             </div>
             {vecLoading ? (
@@ -102,7 +101,7 @@ export default function VectorsPage() {
                   let sources: string[] = [];
                   try { sources = JSON.parse(v.sources); } catch { sources = []; }
                   return (
-                    <div key={v.id} className="bg-card border border-border rounded-lg p-4">
+                    <div key={v.id} className="theme-panel rounded-2xl p-4">
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2 flex-wrap">
@@ -155,13 +154,12 @@ export default function VectorsPage() {
             )}
           </div>
 
-          {/* Scrub History */}
           <div>
-            <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+            <div className="theme-kicker mb-3">
               <Database size={12} className="inline mr-1" />
               Scrub Memory (Recent Runs)
             </div>
-            <div className="overflow-x-auto">
+            <div className="theme-panel rounded-2xl overflow-x-auto">
               <table className="w-full text-xs">
                 <thead>
                   <tr className="border-b border-border text-muted-foreground">

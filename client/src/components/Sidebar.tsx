@@ -1,12 +1,13 @@
-import { Link, useLocation } from "wouter";
+import { Link } from "wouter";
 import { useHashLocation } from "wouter/use-hash-location";
 import {
   LayoutDashboard, Newspaper, TrendingUp, Settings,
-  Activity, Zap, Brain
+  Activity, Zap, Brain, Moon, SunMedium
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
+import { useTheme } from "./theme-provider";
 
 interface ScrubRun {
   id: number;
@@ -27,6 +28,7 @@ export default function Sidebar({ eli5Mode, onToggleEli5 }: {
   onToggleEli5: () => void;
 }) {
   const [loc] = useHashLocation();
+  const { theme, toggleTheme } = useTheme();
 
   const { data: latestRun } = useQuery<ScrubRun>({
     queryKey: ["/api/scrub/latest"],
@@ -36,31 +38,21 @@ export default function Sidebar({ eli5Mode, onToggleEli5 }: {
   const isRunning = latestRun?.status === "running";
 
   return (
-    <aside className="bg-card border-r border-border flex flex-col h-full overflow-y-auto overscroll-contain">
-      {/* Logo */}
-      <div className="p-4 border-b border-border">
-        <div className="flex items-center gap-2">
-          <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-label="Market Pulse logo">
-            <rect width="32" height="32" rx="8" fill="hsl(191 97% 45% / 0.15)" />
-            {/* Pulse line */}
-            <polyline
-              points="4,16 8,16 10,10 12,22 15,8 18,24 20,14 22,14 28,14"
-              stroke="hsl(191 97% 45%)"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              fill="none"
-            />
-          </svg>
-          <div>
-            <div className="text-sm font-bold text-foreground leading-tight">Market Pulse</div>
-            <div className="text-xs text-muted-foreground leading-tight">&amp; Pedagogy</div>
+    <aside className="theme-panel bg-sidebar/90 border-r border-sidebar-border flex flex-col h-full overflow-y-auto overscroll-contain rounded-none">
+      <div className="p-4 border-b border-sidebar-border">
+        <div className="flex items-center gap-3">
+          <div className="theme-logo-ring flex h-12 w-12 items-center justify-center rounded-2xl">
+            <img src="/saucer-DiBJND36.svg" alt="Market Pulse logo" className="h-7 w-7 object-contain opacity-95" />
+          </div>
+          <div className="min-w-0">
+            <div className="theme-kicker">Aliasist Signal Deck</div>
+            <div className="text-sm font-semibold text-foreground leading-tight">Market Pulse</div>
+            <div className="text-xs text-muted-foreground leading-tight">Finance, rewritten with atmosphere</div>
           </div>
         </div>
       </div>
 
-      {/* Scrub Status */}
-      <div className="px-3 py-2 border-b border-border">
+      <div className="px-3 py-3 border-b border-sidebar-border">
         <div className="flex items-center justify-between text-xs">
           <span className="text-muted-foreground">Data Engine</span>
           <div className="flex items-center gap-1">
@@ -83,7 +75,6 @@ export default function Sidebar({ eli5Mode, onToggleEli5 }: {
         )}
       </div>
 
-      {/* Navigation */}
       <nav className="flex-1 p-2 space-y-0.5">
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -91,10 +82,10 @@ export default function Sidebar({ eli5Mode, onToggleEli5 }: {
           return (
             <Link key={item.href} href={item.href}>
               <a className={cn(
-                "flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors cursor-pointer",
+                "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all cursor-pointer border border-transparent",
                 active
-                  ? "bg-primary/10 text-primary font-medium"
-                  : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                  ? "bg-primary/12 text-primary font-medium border-primary/25 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
+                  : "text-muted-foreground hover:text-foreground hover:bg-accent/60 hover:border-border/70"
               )}>
                 <Icon size={16} />
                 {item.label}
@@ -104,22 +95,32 @@ export default function Sidebar({ eli5Mode, onToggleEli5 }: {
         })}
       </nav>
 
-      {/* ELI5 Toggle */}
-      <div className="p-3 border-t border-border">
+      <div className="p-3 border-t border-border space-y-2">
+        <button
+          onClick={toggleTheme}
+          data-testid="button-theme-toggle"
+          className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm transition-all border bg-muted/50 text-muted-foreground border-border hover:text-foreground hover:bg-accent/70"
+        >
+          {theme === "dark" ? <Moon size={16} /> : <SunMedium size={16} />}
+          <span className="flex-1 text-left">{theme === "dark" ? "Dark Mode" : "Normal Mode"}</span>
+          <Badge variant="outline" className="text-xs border-border/80 text-foreground">
+            Switch
+          </Badge>
+        </button>
         <button
           onClick={onToggleEli5}
           data-testid="button-eli5-toggle"
           className={cn(
-            "w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-all",
+            "w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm transition-all border",
             eli5Mode
-              ? "bg-purple-500/20 text-purple-300 border border-purple-500/30"
-              : "bg-muted text-muted-foreground hover:text-foreground hover:bg-accent"
+              ? "bg-primary/12 text-primary border-primary/30"
+              : "bg-muted/50 text-muted-foreground border-border hover:text-foreground hover:bg-accent/70"
           )}
         >
           <Brain size={16} />
           <span className="flex-1 text-left">Learning Mode</span>
           {eli5Mode && (
-            <Badge variant="outline" className="text-xs border-purple-500/50 text-purple-300">ELI5</Badge>
+            <Badge variant="outline" className="text-xs border-primary/40 text-primary">ELI5</Badge>
           )}
         </button>
         {eli5Mode && (
@@ -129,14 +130,13 @@ export default function Sidebar({ eli5Mode, onToggleEli5 }: {
         )}
       </div>
 
-      {/* Footer */}
       <div className="p-3 border-t border-border">
         <div className="text-xs text-muted-foreground">
           <div className="flex items-center gap-1 mb-0.5">
             <Zap size={10} className="text-primary" />
             Refreshes every 15 min
           </div>
-          <div className="text-xs opacity-60">Aliasist.com · dev@aliasist.com</div>
+          <div className="text-xs opacity-60">Theme: {theme} · Aliasist.com</div>
         </div>
       </div>
     </aside>
