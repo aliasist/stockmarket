@@ -40,15 +40,9 @@ export default function Sidebar({ eli5Mode, onToggleEli5 }: {
   return (
     <aside className="theme-panel bg-sidebar/90 border-r border-sidebar-border flex flex-col h-full overflow-y-auto overscroll-contain rounded-none">
       <div className="p-4 border-b border-sidebar-border">
-        <div className="flex items-center gap-3">
-          <div className="theme-logo-ring flex h-12 w-12 items-center justify-center rounded-2xl">
-            <img src="/saucer-DiBJND36.svg" alt="Market Pulse logo" className="h-7 w-7 object-contain opacity-95" />
-          </div>
-          <div className="min-w-0">
-            <div className="theme-kicker">Aliasist Signal Deck</div>
-            <div className="text-sm font-semibold text-foreground leading-tight">Market Pulse</div>
-            <div className="text-xs text-muted-foreground leading-tight">Finance, rewritten with atmosphere</div>
-          </div>
+        <div className="flex flex-col items-start">
+          <div className="text-lg font-bold text-foreground leading-tight">Aliasist Pulse</div>
+          <div className="text-xs text-muted-foreground leading-tight mt-1">Private Market Dashboard</div>
         </div>
       </div>
 
