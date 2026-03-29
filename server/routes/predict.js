@@ -31,7 +31,7 @@ const express = require('express');
 const router = express.Router();
 const { predictTicker, isConfigured } = require('../gemini');
 const yahooFinance = require('yahoo-finance2').default;
-const { db_articles } = require('../db');
+const { db_articles, db_predictions } = require('../db');
 
 /**
  * GET /api/predict/:ticker
@@ -87,7 +87,19 @@ router.get('/:ticker', async (req, res) => {
     const prediction = await predictTicker(upperTicker, quoteData, headlines);
     console.log(`[predict] ${upperTicker} result:`, prediction);
 
-    res.json(prediction);
+    // Log prediction for accuracy tracking (fire-and-forget)
+    let predictionId = null;
+    try {
+      const logResult = db_predictions.insert({
+        ticker: upperTicker,
+        predicted_direction: prediction.prediction,
+      });
+      predictionId = logResult.lastInsertRowid;
+    } catch (logErr) {
+      console.warn(`[predict] Failed to log prediction for tracking:`, logErr.message);
+    }
+
+    res.json({ ...prediction, prediction_id: predictionId });
   } catch (err) {
     // Log the FULL error so we can see what actually went wrong
     console.error(`[predict] GET /api/predict/${upperTicker} error:`, err);

@@ -1,6 +1,10 @@
 /**
  * db.js — SQLite database setup using better-sqlite3
  * All table creation and query helpers live here.
+ *
+ * Supports both local SQLite (dev) and Cloudflare D1 (production).
+ * Set CLOUDFLARE_D1_DB_ID + CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID
+ * to enable D1 sync in production.
  */
 
 const Database = require('better-sqlite3');
@@ -45,15 +49,16 @@ db.exec(`
   );
 
   CREATE TABLE IF NOT EXISTS articles (
-    id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    scrubRunId  INTEGER NOT NULL REFERENCES scrub_runs(id) ON DELETE CASCADE,
-    title       TEXT NOT NULL,
-    url         TEXT,
-    source      TEXT NOT NULL,
-    summary     TEXT,
-    tone        TEXT NOT NULL DEFAULT 'neutral',
-    publishedAt TEXT,
-    scrapedAt   TEXT NOT NULL DEFAULT (datetime('now'))
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    scrubRunId     INTEGER NOT NULL REFERENCES scrub_runs(id) ON DELETE CASCADE,
+    title          TEXT NOT NULL,
+    url            TEXT,
+    source         TEXT NOT NULL,
+    summary        TEXT,
+    tone           TEXT NOT NULL DEFAULT 'neutral',
+    sentiment_score REAL NOT NULL DEFAULT 0.5,
+    publishedAt    TEXT,
+    scrapedAt      TEXT NOT NULL DEFAULT (datetime('now'))
   );
 
   CREATE TABLE IF NOT EXISTS vectors (
@@ -73,6 +78,29 @@ db.exec(`
     explanation TEXT NOT NULL,
     createdAt   TEXT NOT NULL DEFAULT (datetime('now'))
   );
+
+  CREATE TABLE IF NOT EXISTS predictions_history (
+    id                   INTEGER PRIMARY KEY AUTOINCREMENT,
+    ticker               TEXT NOT NULL,
+    predicted_direction  TEXT NOT NULL,
+    predicted_at         TEXT NOT NULL DEFAULT (datetime('now')),
+    actual_price_at_24h  REAL,
+    actual_direction     TEXT,
+    accuracy_score       REAL,
+    created_at           TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+`);
+
+// ─── Indexes for performance ───────────────────────────────────────────────────
+
+db.exec(`
+  CREATE INDEX IF NOT EXISTS idx_watchlist_ticker       ON watchlist(ticker);
+  CREATE INDEX IF NOT EXISTS idx_articles_scrapedAt     ON articles(scrapedAt);
+  CREATE INDEX IF NOT EXISTS idx_articles_tone          ON articles(tone);
+  CREATE INDEX IF NOT EXISTS idx_vectors_ticker         ON vectors(ticker);
+  CREATE INDEX IF NOT EXISTS idx_vectors_createdAt      ON vectors(createdAt);
+  CREATE INDEX IF NOT EXISTS idx_predictions_ticker     ON predictions_history(ticker);
+  CREATE INDEX IF NOT EXISTS idx_predictions_created_at ON predictions_history(created_at);
 `);
 
 // ─── Seed default watchlist if empty ──────────────────────────────────────────
@@ -132,8 +160,8 @@ const db_scrub = {
 const db_articles = {
   insertMany: db.transaction((articles) => {
     const stmt = db.prepare(
-      `INSERT INTO articles (scrubRunId, title, url, source, summary, tone, publishedAt)
-       VALUES (@scrubRunId, @title, @url, @source, @summary, @tone, @publishedAt)`
+      `INSERT INTO articles (scrubRunId, title, url, source, summary, tone, sentiment_score, publishedAt)
+       VALUES (@scrubRunId, @title, @url, @source, @summary, @tone, @sentiment_score, @publishedAt)`
     );
     for (const a of articles) stmt.run(a);
   }),
@@ -210,4 +238,74 @@ const db_eli5 = {
   },
 };
 
-module.exports = { db, db_watchlist, db_scrub, db_articles, db_vectors, db_eli5 };
+// ─── Predictions history queries ───────────────────────────────────────────────
+
+const db_predictions = {
+  insert: ({ ticker, predicted_direction }) =>
+    db
+      .prepare(
+        `INSERT INTO predictions_history (ticker, predicted_direction)
+         VALUES (?, ?)`
+      )
+      .run(ticker, predicted_direction),
+
+  updateOutcome: (id, { actual_price_at_24h, actual_direction, accuracy_score }) =>
+    db
+      .prepare(
+        `UPDATE predictions_history
+         SET actual_price_at_24h = ?, actual_direction = ?, accuracy_score = ?
+         WHERE id = ?`
+      )
+      .run(actual_price_at_24h, actual_direction, accuracy_score, id),
+
+  getPending: () =>
+    db
+      .prepare(
+        `SELECT * FROM predictions_history
+         WHERE actual_direction IS NULL
+           AND predicted_at <= datetime('now', '-24 hours')
+         ORDER BY predicted_at ASC LIMIT 50`
+      )
+      .all(),
+
+  getAccuracyByTicker: (ticker) =>
+    db
+      .prepare(
+        `SELECT
+           ticker,
+           COUNT(*) as total,
+           SUM(CASE WHEN actual_direction IS NOT NULL THEN 1 ELSE 0 END) as resolved,
+           AVG(CASE WHEN predicted_direction = actual_direction THEN 1.0 ELSE 0.0 END) as win_rate,
+           AVG(accuracy_score) as avg_accuracy
+         FROM predictions_history
+         WHERE ticker = ? AND actual_direction IS NOT NULL
+         GROUP BY ticker`
+      )
+      .get(ticker),
+
+  getOverallAccuracy: () =>
+    db
+      .prepare(
+        `SELECT
+           ticker,
+           COUNT(*) as total,
+           SUM(CASE WHEN actual_direction IS NOT NULL THEN 1 ELSE 0 END) as resolved,
+           AVG(CASE WHEN predicted_direction = actual_direction THEN 1.0 ELSE 0.0 END) as win_rate,
+           AVG(accuracy_score) as avg_accuracy
+         FROM predictions_history
+         WHERE actual_direction IS NOT NULL
+         GROUP BY ticker
+         ORDER BY total DESC`
+      )
+      .all(),
+
+  getRecent: (limit = 50) =>
+    db
+      .prepare(
+        `SELECT * FROM predictions_history
+         ORDER BY created_at DESC LIMIT ?`
+      )
+      .all(limit),
+};
+
+module.exports = { db, db_watchlist, db_scrub, db_articles, db_vectors, db_eli5, db_predictions };

@@ -148,6 +148,53 @@ Respond ONLY with a valid JSON object in this exact format (no markdown, no code
 
 // ─── Tone classification ───────────────────────────────────────────────────────
 
+// Bullish keyword patterns (raise sentiment score)
+const BULLISH_KEYWORDS = [
+  'surge', 'rally', 'soar', 'breakout', 'beat', 'record', 'growth', 'profit',
+  'upgrade', 'buy', 'outperform', 'bullish', 'gain', 'rise', 'jump', 'strong',
+  'earnings beat', 'revenue growth', 'expansion', 'acquisition', 'partnership',
+  'innovation', 'launch', 'approval', 'dividend', 'buyback', 'upside',
+];
+
+// Bearish keyword patterns (lower sentiment score)
+const BEARISH_KEYWORDS = [
+  'crash', 'collapse', 'plunge', 'drop', 'fall', 'decline', 'loss', 'miss',
+  'downgrade', 'sell', 'underperform', 'bearish', 'recession', 'layoff', 'cut',
+  'warning', 'risk', 'fear', 'panic', 'crisis', 'debt', 'default', 'fraud',
+  'investigation', 'lawsuit', 'fine', 'penalty', 'downside', 'concern',
+];
+
+// High-impact headline patterns (amplify score deviation from 0.5)
+const HIGH_IMPACT_PATTERNS = [
+  /breaking/i, /earnings/i, /fed\s+rate/i, /interest\s+rate/i, /inflation/i,
+  /gdp/i, /jobs\s+report/i, /cpi/i, /fomc/i, /sec\s+charges/i, /bankruptcy/i,
+];
+
+/**
+ * Compute a heuristic sentiment score from title + summary text.
+ * Returns a float 0.0–1.0 (0 = very bearish, 0.5 = neutral, 1.0 = very bullish).
+ */
+function computeHeuristicSentimentScore(title, summary = '') {
+  const text = `${title} ${summary}`.toLowerCase();
+  let score = 0.5;
+
+  for (const kw of BULLISH_KEYWORDS) {
+    if (text.includes(kw)) score += 0.04;
+  }
+  for (const kw of BEARISH_KEYWORDS) {
+    if (text.includes(kw)) score -= 0.04;
+  }
+
+  // Amplify if high-impact headline
+  const isHighImpact = HIGH_IMPACT_PATTERNS.some((p) => p.test(title));
+  if (isHighImpact) {
+    // Pull score further from neutral
+    score = 0.5 + (score - 0.5) * 1.4;
+  }
+
+  return Math.min(1.0, Math.max(0.0, parseFloat(score.toFixed(3))));
+}
+
 /**
  * Classify the tone of a news article.
  * @param {string} title
@@ -176,6 +223,51 @@ Respond with ONLY the category name — nothing else.
   } catch (err) {
     console.warn('[gemini] classifyTone failed, defaulting to neutral:', err.message);
     return 'neutral';
+  }
+}
+
+/**
+ * Enhanced tone classification that also returns a 0–1 sentiment score.
+ * Uses Gemini when available; falls back to heuristic keyword scoring.
+ *
+ * @param {string} title
+ * @param {string} [summary]
+ * @returns {Promise<{tone: string, sentiment_score: number}>}
+ */
+async function classifyToneWithScore(title, summary = '') {
+  const content = summary ? `Title: ${title}\nSummary: ${summary}` : `Title: ${title}`;
+  const prompt = `
+You are a financial news sentiment analyst. Analyze this article and respond with JSON only (no markdown):
+{
+  "tone": "<fear_mongering|speculative|data_backed|neutral>",
+  "sentiment_score": <float 0.0-1.0 where 0=very bearish, 0.5=neutral, 1.0=very bullish>,
+  "impact": "<breaking|earnings|regulatory|routine>"
+}
+
+Rules for sentiment_score:
+- 0.0–0.2: Severe negative (crash, bankruptcy, fraud, major loss)
+- 0.2–0.4: Moderately negative (decline, miss, downgrade, layoffs)
+- 0.4–0.6: Neutral (informational, mixed signals)
+- 0.6–0.8: Moderately positive (growth, beat, upgrade, partnership)
+- 0.8–1.0: Strongly positive (record high, major breakthrough, massive rally)
+
+${content}
+  `.trim();
+
+  try {
+    const raw = await generateText(prompt);
+    const cleaned = raw.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(cleaned);
+    const valid = ['fear_mongering', 'speculative', 'data_backed', 'neutral'];
+    const tone = valid.includes(parsed.tone) ? parsed.tone : 'neutral';
+    const sentiment_score = Math.min(1.0, Math.max(0.0, Number(parsed.sentiment_score) || 0.5));
+    return { tone, sentiment_score };
+  } catch (err) {
+    console.warn('[gemini] classifyToneWithScore failed, using heuristic:', err.message);
+    // Fallback: heuristic keyword scoring
+    const tone = await classifyTone(title, summary).catch(() => 'neutral');
+    const sentiment_score = computeHeuristicSentimentScore(title, summary);
+    return { tone, sentiment_score };
   }
 }
 
@@ -258,6 +350,8 @@ module.exports = {
   explainTerm,
   predictTicker,
   classifyTone,
+  classifyToneWithScore,
+  computeHeuristicSentimentScore,
   generateVector,
   isConfigured,
 };

@@ -30,7 +30,12 @@ try {
 
 const express = require('express');
 const path = require('path');
+const http = require('http');
 const cron = require('node-cron');
+const { securityHeaders } = require('./middleware/securityHeaders');
+const { limitDefault, limitPredict, limitScrub } = require('./middleware/rateLimit');
+const { cacheQuotes, cacheChart, cacheNews, cachePredict, cacheEli5, noCache } = require('./middleware/cacheControl');
+const { attachWebSocket, closeWebSocket } = require('./websocket');
 
 // ─── Initialize DB first (creates tables and seeds watchlist) ─────────────────
 // Importing db.js executes all CREATE TABLE and seed logic synchronously.
@@ -38,15 +43,17 @@ require('./db');
 console.log('[server] Database initialized.');
 
 // ─── Routes ───────────────────────────────────────────────────────────────────
-const healthRouter    = require('./routes/health');
-const quotesRouter    = require('./routes/quotes');
-const chartRouter     = require('./routes/chart');
-const newsRouter      = require('./routes/news');
-const vectorsRouter   = require('./routes/vectors');
-const predictRouter   = require('./routes/predict');
-const scrubRouter     = require('./routes/scrub');
-const watchlistRouter = require('./routes/watchlist');
-const eli5Router      = require('./routes/eli5');
+const healthRouter      = require('./routes/health');
+const quotesRouter      = require('./routes/quotes');
+const chartRouter       = require('./routes/chart');
+const newsRouter        = require('./routes/news');
+const vectorsRouter     = require('./routes/vectors');
+const predictRouter     = require('./routes/predict');
+const scrubRouter       = require('./routes/scrub');
+const watchlistRouter   = require('./routes/watchlist');
+const eli5Router        = require('./routes/eli5');
+const predictionsRouter = require('./routes/predictions');
+const sentimentRouter   = require('./routes/sentiment');
 
 const { runScrub } = require('./scraper');
 
@@ -55,6 +62,9 @@ const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Security headers on all responses
+app.use(securityHeaders);
 
 // CORS — allow all origins in development; tighten in production if needed
 app.use((req, res, next) => {
@@ -65,7 +75,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Request logger (concise)
+// Structured request logger (method, path, status, duration)
 app.use((req, res, next) => {
   const start = Date.now();
   res.on('finish', () => {
@@ -76,16 +86,20 @@ app.use((req, res, next) => {
   next();
 });
 
-// ─── API routes ───────────────────────────────────────────────────────────────
-app.use('/api/health',    healthRouter);
-app.use('/api/quotes',    quotesRouter);
-app.use('/api/chart',     chartRouter);
-app.use('/api/news',      newsRouter);
-app.use('/api/vectors',   vectorsRouter);
-app.use('/api/predict',   predictRouter);
-app.use('/api/scrub',     scrubRouter);
-app.use('/api/watchlist', watchlistRouter);
-app.use('/api/eli5',      eli5Router);
+// ─── API routes (with rate limiting + cache headers) ─────────────────────────
+app.use('/api/health',    limitDefault, healthRouter);
+app.use('/api/quotes',    limitDefault, cacheQuotes,  quotesRouter);
+app.use('/api/chart',     limitDefault, cacheChart,   chartRouter);
+// Sentiment correlation must be mounted before /api/news to avoid route shadowing
+app.use('/api/news/sentiment-correlation', limitDefault, cacheChart, sentimentRouter);
+app.use('/api/news',      limitDefault, cacheNews,    newsRouter);
+app.use('/api/vectors',   limitDefault, vectorsRouter);
+app.use('/api/predict',   limitPredict, cachePredict, predictRouter);
+app.use('/api/scrub/trigger', limitScrub, noCache);
+app.use('/api/scrub',     limitDefault, scrubRouter);
+app.use('/api/watchlist', limitDefault, noCache, watchlistRouter);
+app.use('/api/eli5',      limitDefault, cacheEli5,   eli5Router);
+app.use('/api/predictions', limitDefault, predictionsRouter);
 
 // 404 handler for unknown API routes
 app.use('/api/*', (req, res) => {
@@ -145,10 +159,18 @@ app.use((err, req, res, next) => {
 
 // ─── Start server ─────────────────────────────────────────────────────────────
 const PORT = parseInt(process.env.PORT, 10) || 3000;
-const server = app.listen(PORT, '0.0.0.0', () => {
+const server = http.createServer(app);
+
+// Attach WebSocket server for real-time price updates
+attachWebSocket(server);
+
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`[server] Market Pulse & Pedagogy running on port ${PORT}`);
   console.log(`[server] Gemini configured: ${!!process.env.GEMINI_API_KEY}`);
   console.log(`[server] Cloudflare configured: ${!!process.env.CLOUDFLARE_API_TOKEN}`);
+  console.log(`[server] D1 configured: ${!!(process.env.CLOUDFLARE_D1_DB_ID && process.env.CLOUDFLARE_API_TOKEN)}`);
+  console.log(`[server] Rate limiting: ${process.env.RATE_LIMIT_ENABLED !== 'false' ? 'enabled' : 'disabled'}`);
+  console.log(`[server] WebSocket: ${process.env.WEBSOCKET_ENABLED !== 'false' ? 'enabled at /ws/quotes' : 'disabled'}`);
   console.log(`[server] Node version: ${process.version}`);
 });
 
@@ -175,6 +197,19 @@ cron.schedule('*/15 * * * *', async () => {
 
 console.log('[cron] Scrub scheduler started — runs every 15 minutes.');
 
+// ─── Daily prediction accuracy resolution cron ────────────────────────────────
+// Runs once per day at 06:00 UTC to resolve predictions made 24h+ ago
+cron.schedule('0 6 * * *', async () => {
+  console.log('[cron] Running daily prediction accuracy resolution...');
+  try {
+    const result = await predictionsRouter.resolvePendingPredictions();
+    console.log(`[cron] Prediction resolution: ${result.resolved} resolved, ${result.errors} errors.`);
+  } catch (err) {
+    console.error('[cron] Prediction resolution failed:', err.message);
+  }
+});
+console.log('[cron] Prediction accuracy resolver scheduled — runs daily at 06:00 UTC.');
+
 // ─── Run an initial scrub after a short startup delay ─────────────────────────
 // Delay 30 seconds to let Railway finish container initialization
 setTimeout(async () => {
@@ -194,6 +229,7 @@ setTimeout(async () => {
 // ─── Graceful shutdown ────────────────────────────────────────────────────────
 function shutdown(signal) {
   console.log(`[server] Received ${signal} — shutting down gracefully...`);
+  closeWebSocket();
   server.close(() => {
     console.log('[server] HTTP server closed.');
     process.exit(0);
