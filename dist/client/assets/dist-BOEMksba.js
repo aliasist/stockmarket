@@ -1,1 +1,0 @@
-import{K as e,Y as t,l as n}from"./theme-provider-Bgbb8Qhh.js";var r=t(e(),1);n();var i=r.createContext(void 0);function a(e){let t=r.useContext(i);return e||t||`ltr`}function o(e,[t,n]){return Math.min(n,Math.max(t,e))}export{a as n,o as t};
