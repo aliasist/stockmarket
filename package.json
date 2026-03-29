@@ -6,8 +6,13 @@
   "main": "dist/server/index.js",
   "scripts": {
     "dev": "tsx server/index.ts",
+    "build:client": "vite build",
     "build": "rm -rf dist node_modules/typescript/tsbuildinfo && vite build && tsc",
-    "start": "NODE_ENV=production node dist/server/index.js"
+    "start": "NODE_ENV=production node dist/server/index.js",
+    "cf:preview": "npm run build:client && npx wrangler dev",
+    "cf:deploy": "npm run build:client && npx wrangler deploy",
+    "cf:d1:migrate": "npx wrangler d1 migrations apply market-pulse",
+    "cf:d1:seed": "npx wrangler d1 execute market-pulse --file=./migrations/0001_init.sql"
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",

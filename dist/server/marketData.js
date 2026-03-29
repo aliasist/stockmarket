@@ -4,6 +4,28 @@
  * Fallback: Mock data with realistic structure
  */
 import axios from "axios";
+const QUOTE_CACHE_TTL_MS = 15_000;
+const CHART_CACHE_TTL_MS = 30_000;
+const quoteCache = new Map();
+const chartCache = new Map();
+function getCachedValue(cache, key) {
+    const cached = cache.get(key);
+    if (!cached) {
+        return null;
+    }
+    if (cached.expiresAt <= Date.now()) {
+        cache.delete(key);
+        return null;
+    }
+    return cached.value;
+}
+function setCachedValue(cache, key, value, ttlMs) {
+    cache.set(key, {
+        value,
+        expiresAt: Date.now() + ttlMs,
+    });
+    return value;
+}
 // Yahoo Finance v8 API (public, no key required)
 async function fetchYahooQuote(ticker) {
     try {
@@ -115,12 +137,27 @@ function mockCandles(ticker, count = 50) {
 }
 // Public API
 export async function getQuotes(tickers) {
+    const cacheKey = tickers
+        .map((ticker) => ticker.toUpperCase())
+        .sort()
+        .join(",");
+    const cached = getCachedValue(quoteCache, cacheKey);
+    if (cached) {
+        return cached;
+    }
     const results = await Promise.all(tickers.map(fetchYahooQuote));
-    return results.map((q, i) => q || mockQuote(tickers[i]));
+    const quotes = results.map((q, i) => q || mockQuote(tickers[i]));
+    return setCachedValue(quoteCache, cacheKey, quotes, QUOTE_CACHE_TTL_MS);
 }
 export async function getChart(ticker, range = "5d", interval = "15m") {
+    const cacheKey = `${ticker.toUpperCase()}|${range}|${interval}`;
+    const cached = getCachedValue(chartCache, cacheKey);
+    if (cached) {
+        return cached;
+    }
     const data = await fetchYahooChart(ticker, range, interval);
-    if (data.length > 0)
-        return data;
-    return mockCandles(ticker);
+    if (data.length > 0) {
+        return setCachedValue(chartCache, cacheKey, data, CHART_CACHE_TTL_MS);
+    }
+    return setCachedValue(chartCache, cacheKey, mockCandles(ticker), CHART_CACHE_TTL_MS);
 }

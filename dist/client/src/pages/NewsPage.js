@@ -9,7 +9,6 @@ export default function NewsPage() {
     const [eli5Mode, setEli5Mode] = useState(false);
     const { data: articles = [] } = useQuery({
         queryKey: ["/api/news"],
-        refetchInterval: 60000,
     });
     const toneCounts = articles.reduce((acc, a) => {
         const t = a.tone || "neutral";

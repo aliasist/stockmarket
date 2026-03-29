@@ -29,19 +29,15 @@ export function log(message, source = "express") {
 app.use((req, res, next) => {
     const start = Date.now();
     const requestPath = req.path;
-    let capturedJsonResponse;
-    const originalResJson = res.json.bind(res);
-    res.json = function (bodyJson, ...args) {
-        capturedJsonResponse = bodyJson;
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-        return originalResJson(bodyJson, ...args);
-    };
     res.on("finish", () => {
         const duration = Date.now() - start;
         if (requestPath.startsWith("/api")) {
             let logLine = `${req.method} ${requestPath} ${res.statusCode} in ${duration}ms`;
-            if (capturedJsonResponse) {
-                logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
+            if (process.env.NODE_ENV !== "production") {
+                const contentLength = res.getHeader("content-length");
+                if (contentLength) {
+                    logLine += ` :: ${contentLength}b`;
+                }
             }
             log(logLine);
         }

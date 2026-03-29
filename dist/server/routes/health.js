@@ -8,7 +8,7 @@ const { isConfigured } = require('../gemini');
 router.get('/', (req, res) => {
     res.json({
         status: 'ok',
-        geminiConfigured: isConfigured(),
+        aiConfigured: isConfigured(),
         cloudflareConfigured: !!process.env.CLOUDFLARE_API_TOKEN,
         timestamp: new Date().toISOString(),
     });

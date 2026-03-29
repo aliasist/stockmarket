@@ -8,6 +8,7 @@ import QuoteCard from "../components/QuoteCard";
 import PriceChart from "../components/PriceChart";
 import PredictivePanel from "../components/PredictivePanel";
 import NewsFeed from "../components/NewsFeed";
+import { AnalyticsSpikes } from "../components/AnalyticsSpikes";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -80,9 +81,9 @@ export default function Dashboard() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            {h && !h.geminiConfigured && (
+            {h && !h.aiConfigured && (
               <div className="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2 py-1 rounded-md">
-                Set GEMINI_API_KEY for AI features
+                Enable Workers AI for AI features
               </div>
             )}
             <Button
@@ -101,6 +102,9 @@ export default function Dashboard() {
               Run Scrub
             </Button>
           </div>
+        </div>
+        <div className="mt-8">
+          <AnalyticsSpikes />
         </div>
 
         <div className="flex-1 overflow-y-auto overscroll-contain p-6 space-y-6">

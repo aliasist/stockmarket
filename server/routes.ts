@@ -47,7 +47,7 @@ export async function registerRoutes(app: Express): Promise<void> {
   app.get("/api/health", (_req, res) => {
     res.json({
       status: "ok",
-      geminiConfigured: Boolean(process.env.GEMINI_API_KEY),
+      aiConfigured: Boolean(process.env.GEMINI_API_KEY),
       cloudflareConfigured: Boolean(process.env.CLOUDFLARE_API_TOKEN),
       timestamp: new Date().toISOString(),
     })

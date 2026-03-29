@@ -1,0 +1,27 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "stockmarket",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-03-29",
+  "assets": {
+    "directory": "./dist/client",
+    "binding": "ASSETS"
+  },
+  "ai": {
+    "binding": "AI"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "market-pulse",
+      "database_id": "779373eb-b2f2-4c01-a00a-35bff1e9afe8",
+      "migrations_dir": "./migrations"
+    }
+  ],
+  "analytics_engine_datasets": [
+    { "binding": "ANALYTICS_ENGINE", "dataset": "analytics_data" }
+  ],
+  "triggers": {
+    "crons": ["*/15 * * * *"]
+  }
+}

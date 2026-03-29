@@ -55,7 +55,7 @@ export default function SettingsPage() {
         <div className="theme-topbar px-6 py-4 border-b border-border">
           <div className="theme-kicker mb-1">Control Room</div>
           <h1 className="theme-title text-2xl text-foreground">Settings</h1>
-          <p className="text-sm text-muted-foreground mt-1">Configure your watchlist and API keys</p>
+          <p className="text-sm text-muted-foreground mt-1">Configure your watchlist and runtime integrations</p>
         </div>
 
         <div className="flex-1 overflow-y-auto p-6 space-y-8 max-w-2xl">
@@ -69,28 +69,20 @@ export default function SettingsPage() {
                 </div>
                 <div className={cn(
                   "text-xs px-2 py-1 rounded-full font-medium",
-                  h?.geminiConfigured
+                  h?.aiConfigured
                     ? "bg-emerald-500/10 text-emerald-400"
                     : "bg-amber-500/10 text-amber-400"
                 )}>
-                  {h?.geminiConfigured ? "Configured" : "Not Set"}
+                  {h?.aiConfigured ? "Configured" : "Not Set"}
                 </div>
               </div>
-              {!h?.geminiConfigured && (
+              {!h?.aiConfigured && (
                 <div className="p-4 text-xs text-muted-foreground space-y-2">
                   <p>To enable AI features, set the environment variable:</p>
                   <code className="block bg-muted px-3 py-2 rounded font-mono text-foreground">
-                    GEMINI_API_KEY=your_key_here
+                    Cloudflare Workers AI binding enabled
                   </code>
-                  <a
-                    href="https://aistudio.google.com/app/apikey"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-primary hover:underline"
-                  >
-                    Get a free Gemini API key <ExternalLink size={10} />
-                  </a>
-                  <p className="mt-2">For Vercel deployment: Add it in your project's Environment Variables.</p>
+                  <p className="mt-2">This Cloudflare deployment uses Workers AI instead of a Google Gemini key.</p>
                 </div>
               )}
 
@@ -101,6 +93,21 @@ export default function SettingsPage() {
                 </div>
                 <div className="text-xs px-2 py-1 rounded-full font-medium bg-emerald-500/10 text-emerald-400">
                   Active
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between p-4">
+                <div>
+                  <div className="text-sm font-medium">Cloudflare Services</div>
+                  <div className="text-xs text-muted-foreground">Optional Workers AI and D1 integration</div>
+                </div>
+                <div className={cn(
+                  "text-xs px-2 py-1 rounded-full font-medium",
+                  h?.cloudflareConfigured
+                    ? "bg-emerald-500/10 text-emerald-400"
+                    : "bg-amber-500/10 text-amber-400"
+                )}>
+                  {h?.cloudflareConfigured ? "Configured" : "Optional"}
                 </div>
               </div>
             </div>

@@ -23,17 +23,40 @@ Real-time stock dashboard with AI-powered analysis, news scraping, and ELI5 lear
 | AI | Google Gemini 1.5 Flash |
 | Market Data | Yahoo Finance |
 | Database | SQLite (better-sqlite3) |
-| Deployment | Railway |
-| CDN | Cloudflare |
+| Runtime | Node.js |
+| Cloud Services | Cloudflare |
 
-## Deployment (Railway)
+## Deployment
 
 1. Push this repo to GitHub
-2. Create a new Railway project → Deploy from GitHub
-3. Set environment variables:
+2. For the current Node runtime, install dependencies and build with npm:
+   - `npm install`
+   - `npm run build`
+3. Run the production server with:
+   - `npm start`
+4. Set environment variables:
    - `GEMINI_API_KEY` — Get one at https://aistudio.google.com/app/apikey
-4. Railway auto-detects Node.js and runs `npm start`
-5. Point your custom domain (e.g., `pulse.aliasist.com`) to the Railway service URL
+   - `CLOUDFLARE_ACCOUNT_ID` — Optional, enables Cloudflare Workers AI and D1 access
+   - `CLOUDFLARE_API_TOKEN` — Optional, enables Cloudflare Workers AI and D1 access
+   - `CLOUDFLARE_D1_DB_ID` — Optional, enables Cloudflare D1 queries
+5. Point your custom domain (for example `pulse.aliasist.com`) at the host serving this Node app
+
+## Cloudflare Workers Migration
+
+This repo now also includes a Cloudflare-native runtime:
+
+1. Build the frontend assets:
+   - `npm run build:client`
+2. Create a D1 database in Cloudflare and replace `REPLACE_WITH_YOUR_D1_DATABASE_ID` in `wrangler.jsonc`
+3. Apply the schema:
+   - `npm run cf:d1:migrate`
+4. Enable the Workers AI binding in `wrangler.jsonc` for AI features
+5. Preview locally:
+   - `npm run cf:preview`
+6. Deploy:
+   - `npm run cf:deploy`
+
+The Worker entrypoint lives in `worker/index.ts`, serves the built SPA from `dist/client`, uses D1 for persistence, uses Workers AI for LLM features, and runs the scrub job every 15 minutes via Cloudflare cron.
 
 ## Local Development
 
