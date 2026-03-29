@@ -36,9 +36,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<ThemeMode>(getInitialTheme);
 
   useEffect(() => {
-    applyTheme(theme);
-    window.localStorage.setItem(THEME_STORAGE_KEY, theme);
-  }, [theme]);
+    document.documentElement.setAttribute("data-theme", "dark");
+  }, []);
+
+  return <>{children}</>;
+}
 
   const value = useMemo<ThemeContextValue>(
     () => ({
