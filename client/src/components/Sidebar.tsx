@@ -119,7 +119,7 @@ export default function Sidebar({ eli5Mode, onToggleEli5 }: {
         </button>
         {eli5Mode && (
           <p className="text-xs text-muted-foreground mt-1.5 px-1">
-            Financial terms explained with toys & candy
+            Financial terms explained.
           </p>
         )}
       </div>
