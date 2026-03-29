@@ -8,6 +8,8 @@ import {
   newsArticles,
   eli5Cache,
   watchlist,
+  users,
+  sessions,
   type ScrubRun,
   type InsertScrubRun,
   type MarketVector,
@@ -18,12 +20,31 @@ import {
   type InsertEli5Cache,
   type Watchlist,
   type InsertWatchlist,
+  type User,
+  type InsertUser,
+  type Session,
+  type InsertSession,
 } from "../shared/schema.js"
 
 const sqlite = new Database("market_pulse.db")
 const db = drizzle(sqlite, { schema })
 
 sqlite.exec(`
+  CREATE TABLE IF NOT EXISTS users (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    email         TEXT    NOT NULL UNIQUE,
+    password_hash TEXT,
+    google_id     TEXT    UNIQUE,
+    created_at    TEXT    NOT NULL,
+    updated_at    TEXT    NOT NULL
+  );
+  CREATE TABLE IF NOT EXISTS sessions (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    token      TEXT    NOT NULL UNIQUE,
+    expires_at TEXT    NOT NULL,
+    created_at TEXT    NOT NULL
+  );
   CREATE TABLE IF NOT EXISTS scrub_runs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     run_at TEXT NOT NULL,
@@ -90,6 +111,15 @@ try {
 }
 
 export interface IStorage {
+  // Users
+  createUser(data: InsertUser): User
+  getUserByEmail(email: string): User | undefined
+  getUserById(id: number): User | undefined
+  // Sessions
+  createSession(data: InsertSession): Session
+  getSession(token: string): Session | undefined
+  deleteSession(token: string): void
+  // Scrub runs
   createScrubRun(data: InsertScrubRun): ScrubRun
   updateScrubRun(id: number, data: Partial<ScrubRun>): ScrubRun | undefined
   getLatestScrubRun(): ScrubRun | undefined
@@ -107,6 +137,27 @@ export interface IStorage {
 }
 
 export const storage: IStorage = {
+  // ── Users ──────────────────────────────────────────────────────────────
+  createUser(data) {
+    return db.insert(users).values(data).returning().get()!
+  },
+  getUserByEmail(email) {
+    return db.select().from(users).where(eq(users.email, email)).get()
+  },
+  getUserById(id) {
+    return db.select().from(users).where(eq(users.id, id)).get()
+  },
+  // ── Sessions ────────────────────────────────────────────────────────────
+  createSession(data) {
+    return db.insert(sessions).values(data).returning().get()!
+  },
+  getSession(token) {
+    return db.select().from(sessions).where(eq(sessions.token, token)).get()
+  },
+  deleteSession(token) {
+    db.delete(sessions).where(eq(sessions.token, token)).run()
+  },
+  // ── Scrub runs ──────────────────────────────────────────────────────────
   createScrubRun(data) {
     return db.insert(scrubRuns).values(data).returning().get()!
   },

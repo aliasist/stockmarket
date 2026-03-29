@@ -2,6 +2,59 @@ import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core"
 import { createInsertSchema } from "drizzle-zod"
 import { z } from "zod"
 
+// ── Users ──────────────────────────────────────────────────────────────────
+export const users = sqliteTable("users", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  email: text("email").notNull().unique(),
+  passwordHash: text("password_hash"), // null for OAuth-only accounts
+  googleId: text("google_id").unique(),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+})
+
+export const insertUserSchema = createInsertSchema(users)
+export type InsertUser = Omit<typeof users.$inferInsert, "id">
+export type User = typeof users.$inferSelect
+
+// ── Sessions ───────────────────────────────────────────────────────────────
+export const sessions = sqliteTable("sessions", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: integer("user_id").notNull(),
+  token: text("token").notNull().unique(),
+  expiresAt: text("expires_at").notNull(),
+  createdAt: text("created_at").notNull(),
+})
+
+export const insertSessionSchema = createInsertSchema(sessions)
+export type InsertSession = Omit<typeof sessions.$inferInsert, "id">
+export type Session = typeof sessions.$inferSelect
+
+// ── User Watchlists (per-user) ─────────────────────────────────────────────
+export const userWatchlists = sqliteTable("user_watchlists", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: integer("user_id").notNull(),
+  ticker: text("ticker").notNull(),
+  addedAt: text("added_at").notNull(),
+})
+
+export const insertUserWatchlistSchema = createInsertSchema(userWatchlists)
+export type InsertUserWatchlist = Omit<typeof userWatchlists.$inferInsert, "id">
+export type UserWatchlist = typeof userWatchlists.$inferSelect
+
+// ── Portfolio Holdings ─────────────────────────────────────────────────────
+export const portfolioHoldings = sqliteTable("portfolio_holdings", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: integer("user_id").notNull(),
+  ticker: text("ticker").notNull(),
+  shares: real("shares").notNull(),
+  costBasis: real("cost_basis").notNull(), // average cost per share
+  addedAt: text("added_at").notNull(),
+})
+
+export const insertPortfolioHoldingSchema = createInsertSchema(portfolioHoldings)
+export type InsertPortfolioHolding = Omit<typeof portfolioHoldings.$inferInsert, "id">
+export type PortfolioHolding = typeof portfolioHoldings.$inferSelect
+
 // ── Scrub Runs ─────────────────────────────────────────────────────────────
 export const scrubRuns = sqliteTable("scrub_runs", {
   id: integer("id").primaryKey({ autoIncrement: true }),
