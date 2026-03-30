@@ -79,7 +79,7 @@ export default function Dashboard() {
               {eli5Mode ? "Learning Interface" : "Aliasist-Inspired Trading Console"}
             </div>
             <h1 className="theme-title text-2xl text-foreground">
-              {eli5Mode ? "🎓 Market School Dashboard" : "Market Pulse Dashboard"}
+              {eli5Mode ? "🎓 Aliasist School Dashboard" : "Aliasist Pulse Dashboard"}
             </h1>
             <p className="text-sm text-muted-foreground">
               {eli5Mode

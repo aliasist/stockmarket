@@ -44,7 +44,7 @@ export default function Sidebar({ eli5Mode, onToggleEli5 }: { eli5Mode: boolean;
           </div>
           <div className="min-w-0">
             <div className="theme-kicker">Aliasist Signal Deck</div>
-            <div className="text-sm font-semibold text-foreground leading-tight">Market Pulse</div>
+            <div className="text-sm font-semibold text-foreground leading-tight">Aliasist Pulse</div>
             <div className="text-xs text-muted-foreground leading-tight">Finance, rewritten with atmosphere</div>
           </div>
         </div>
