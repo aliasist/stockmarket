@@ -18,8 +18,8 @@
     --popover: 257 29% 11%;
     --popover-foreground: 260 29% 95%;
 
-    --primary: 168 76% 48%;
-    --primary-foreground: 166 44% 8%;
+    --primary: 142 72% 38%;
+    --primary-foreground: 138 80% 96%;
 
     --secondary: 259 24% 18%;
     --secondary-foreground: 258 27% 92%;
@@ -35,7 +35,7 @@
 
     --border: 258 22% 22%;
     --input: 258 22% 16%;
-    --ring: 168 76% 48%;
+    --ring: 142 72% 38%;
 
     --radius: 1rem;
 
@@ -46,19 +46,19 @@
     --sidebar: 258 34% 10%;
     --sidebar-foreground: 260 29% 95%;
     --sidebar-border: 258 22% 22%;
-    --sidebar-ring: 168 76% 48%;
-    --sidebar-primary: 168 76% 48%;
-    --sidebar-primary-foreground: 166 44% 8%;
+    --sidebar-ring: 142 72% 38%;
+    --sidebar-primary: 142 72% 38%;
+    --sidebar-primary-foreground: 138 80% 96%;
     --sidebar-accent: 259 24% 18%;
     --sidebar-accent-foreground: 260 29% 95%;
 
-    --chart-1: 168 76% 48%;
-    --chart-2: 164 83% 54%;
+    --chart-1: 142 72% 38%;
+    --chart-2: 152 68% 44%;
     --chart-3: 347 89% 63%;
     --chart-4: 40 96% 62%;
     --chart-5: 196 100% 67%;
 
-    --glow-purple: 168 76% 52%;
+    --glow-purple: 142 72% 42%;
     --glow-pink: 312 90% 68%;
     --glow-cyan: 196 100% 67%;
     --panel-shadow: 0 24px 80px rgba(10, 6, 26, 0.55);
@@ -88,7 +88,7 @@
     --card-foreground: 215 32% 14%;
     --popover: 0 0% 100%;
     --popover-foreground: 215 32% 14%;
-    --primary: 172 58% 36%;
+    --primary: 142 60% 28%;
     --primary-foreground: 0 0% 100%;
     --secondary: 185 28% 92%;
     --secondary-foreground: 215 32% 14%;
@@ -100,21 +100,21 @@
     --destructive-foreground: 0 0% 100%;
     --border: 168 18% 82%;
     --input: 168 16% 88%;
-    --ring: 172 58% 36%;
+    --ring: 142 60% 28%;
     --sidebar: 168 20% 94%;
     --sidebar-foreground: 215 32% 14%;
     --sidebar-border: 168 18% 82%;
-    --sidebar-ring: 172 58% 36%;
-    --sidebar-primary: 172 58% 36%;
+    --sidebar-ring: 142 60% 28%;
+    --sidebar-primary: 142 60% 28%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 168 22% 90%;
     --sidebar-accent-foreground: 215 32% 14%;
-    --chart-1: 172 58% 36%;
-    --chart-2: 158 64% 36%;
+    --chart-1: 142 60% 28%;
+    --chart-2: 152 56% 34%;
     --chart-3: 347 74% 54%;
     --chart-4: 37 88% 47%;
     --chart-5: 186 86% 39%;
-    --glow-purple: 172 58% 40%;
+    --glow-purple: 142 60% 32%;
     --glow-pink: 18 89% 59%;
     --glow-cyan: 186 86% 39%;
     --panel-shadow: 0 24px 60px rgba(45, 72, 78, 0.14);
@@ -353,7 +353,7 @@
     content: '';
     position: absolute;
     inset: 0;
-    background: radial-gradient(circle at 50% 50%, hsl(168 76% 48% / 0.4), transparent 70%);
+    background: radial-gradient(circle at 50% 50%, hsl(142 72% 38% / 0.4), transparent 70%);
     opacity: 0;
     transition: opacity 0.3s ease;
   }
