@@ -15,7 +15,7 @@ interface ThemeContextValue {
   toggleTheme: () => void;
 }
 
-const THEME_STORAGE_KEY = "market-pulse-theme";
+const THEME_STORAGE_KEY = "aliasist-pulse-theme";
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 

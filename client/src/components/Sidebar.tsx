@@ -128,9 +128,9 @@ export default function Sidebar({ eli5Mode, onToggleEli5 }: { eli5Mode: boolean;
         <div className="text-xs text-muted-foreground">
           <div className="flex items-center gap-1 mb-0.5">
             <Zap size={10} className="text-primary" />
-            Refreshes every 15 min
+            // sync every 15 min
           </div>
-          <div className="text-xs opacity-60">Theme: {theme} · Aliasist.com</div>
+          <div className="text-xs opacity-60">// {theme} mode · aliasist.com</div>
         </div>
       </div>
     </aside>

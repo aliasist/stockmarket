@@ -76,7 +76,7 @@ export default function Dashboard() {
         )}>
           <div>
             <div className="theme-kicker mb-1">
-              {eli5Mode ? "Learning Interface" : "Aliasist-Inspired Trading Console"}
+              {eli5Mode ? "Learning Interface" : "// ALIASIST · SIGNAL DECK"}
             </div>
             <h1 className="theme-title text-2xl text-foreground">
               {eli5Mode ? "🎓 Aliasist School Dashboard" : "Aliasist Pulse Dashboard"}
@@ -93,6 +93,31 @@ export default function Dashboard() {
                 Enable Workers AI for AI features
               </div>
             )}
+            {/* Ticker search */}
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const val = (e.currentTarget.elements.namedItem("ticker") as HTMLInputElement)?.value?.trim().toUpperCase();
+                if (val) setSelectedTicker(val);
+              }}
+              className="flex items-center gap-2"
+            >
+              <div className="relative">
+                <input
+                  name="ticker"
+                  defaultValue={selectedTicker}
+                  placeholder="Enter ticker..."
+                  className="w-36 pl-3 pr-3 py-1.5 text-xs font-mono bg-muted/40 border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary/60 text-foreground placeholder:text-muted-foreground uppercase tracking-wider"
+                  style={{ letterSpacing: "0.1em" }}
+                />
+              </div>
+              <button
+                type="submit"
+                className="px-3 py-1.5 text-xs font-mono bg-primary/15 text-primary border border-primary/30 rounded-md hover:bg-primary/25 transition-all"
+              >
+                LOAD
+              </button>
+            </form>
             <Button
               data-testid="button-trigger-scrub"
               size="sm"
