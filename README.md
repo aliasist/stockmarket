@@ -4,6 +4,10 @@ Real-time stock dashboard with AI-powered analysis, news scraping, and ELI5 lear
 
 **Created by [Aliasist.com](https://aliasist.com) · dev@aliasist.com**
 
+## Project root
+
+Use **this directory** (where `package.json`, `client/`, and `server/` live) as the only app root. Open it in your editor and run `npm install`, `npm run dev`, and `npm run build` here — not a nested `stockmarket/` subfolder.
+
 ## Features
 
 - **Live Watchlist** — Real-time quotes for SPY, QQQ, BTC-USD, AAPL, NVDA, TSLA

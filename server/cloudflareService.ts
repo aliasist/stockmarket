@@ -1,3 +1,19 @@
+// ── Chatbot Conversation/Message Saving ───────────────────────────────
+/**
+ * Save a chatbot conversation to D1
+ */
+export async function saveChatbotConversation({ userId, createdAt, title }: { userId?: string, createdAt: string, title?: string }) {
+  const sql = `INSERT INTO chatbot_conversations (user_id, created_at, title) VALUES (?, ?, ?)`;
+  await queryD1(sql, [userId || null, createdAt, title || null]);
+}
+
+/**
+ * Save a chatbot message to D1
+ */
+export async function saveChatbotMessage({ conversationId, sender, content, createdAt }: { conversationId: number, sender: string, content: string, createdAt: string }) {
+  const sql = `INSERT INTO chatbot_messages (conversation_id, sender, content, created_at) VALUES (?, ?, ?, ?)`;
+  await queryD1(sql, [conversationId, sender, content, createdAt]);
+}
 /**
  * Cloudflare Services Integration
  * - Workers AI: fast LLM inference for ELI5 explanations

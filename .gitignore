@@ -3,6 +3,8 @@ market_pulse.db
 market_pulse.db-wal
 market_pulse.db-shm
 .env
+.env.local
+dist/
 *.log
 .aider*
 .codex

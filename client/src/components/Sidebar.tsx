@@ -1,41 +1,52 @@
+import { Link } from "wouter";
+import { useHashLocation } from "wouter/use-hash-location";
+import {
+  LayoutDashboard, Newspaper, TrendingUp, Settings,
+  Zap, Brain, Moon, SunMedium, MessageSquare
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
+import { Badge } from "@/components/ui/badge";
+import Logo from "@/components/ui/logo";
+import { useTheme } from "./theme-provider";
 
 interface ScrubRun {
   id: number;
   status: string;
+  runAt: string;
+  vectorsFound: number;
 }
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/news", label: "News Feed", icon: Newspaper },
   { href: "/vectors", label: "Market Vectors", icon: TrendingUp },
+  { href: "/research", label: "AI Research", icon: MessageSquare },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
-export default function Sidebar({ eli5Mode, onToggleEli5 }: {
-  eli5Mode: boolean;
-  onToggleEli5: () => void;
-}) {
+export default function Sidebar({ eli5Mode, onToggleEli5 }: { eli5Mode: boolean; onToggleEli5: () => void }) {
   const [loc] = useHashLocation();
   const { theme, toggleTheme } = useTheme();
-
   const { data: latestRun } = useQuery<ScrubRun>({
     queryKey: ["/api/scrub/latest"],
     refetchInterval: 30000,
   });
-
   const isRunning = latestRun?.status === "running";
-
   return (
     <aside className="theme-panel bg-sidebar/90 border-r border-sidebar-border flex flex-col h-full overflow-y-auto overscroll-contain rounded-none">
       <div className="p-4 border-b border-sidebar-border">
-        <div className="flex flex-col items-start">
-          <div className="text-lg font-bold text-foreground leading-tight">Aliasist Pulse</div>
-          <div className="text-xs text-muted-foreground leading-tight mt-1">Private Market Dashboard</div>
+        <div className="flex items-center gap-3">
+          <div className="theme-logo-ring flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10">
+            <Logo className="h-7 w-7 object-contain opacity-95" />
+          </div>
+          <div className="min-w-0">
+            <div className="theme-kicker">Aliasist Signal Deck</div>
+            <div className="text-sm font-semibold text-foreground leading-tight">Market Pulse</div>
+            <div className="text-xs text-muted-foreground leading-tight">Finance, rewritten with atmosphere</div>
+          </div>
         </div>
       </div>
-
       <div className="px-3 py-3 border-b border-sidebar-border">
         <div className="flex items-center justify-between text-xs">
           <span className="text-muted-foreground">Data Engine</span>
@@ -58,7 +69,6 @@ export default function Sidebar({ eli5Mode, onToggleEli5 }: {
           </div>
         )}
       </div>
-
       <nav className="flex-1 p-2 space-y-0.5">
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -78,7 +88,6 @@ export default function Sidebar({ eli5Mode, onToggleEli5 }: {
           );
         })}
       </nav>
-
       <div className="p-3 border-t border-border space-y-2">
         <button
           onClick={toggleTheme}
@@ -97,8 +106,6 @@ export default function Sidebar({ eli5Mode, onToggleEli5 }: {
           className={cn(
             "w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm transition-all border",
             eli5Mode
-<<<<<<< HEAD
-=======
               ? "bg-primary/12 text-primary border-primary/30"
               : "bg-muted/50 text-muted-foreground border-border hover:text-foreground hover:bg-accent/70"
           )}
@@ -111,30 +118,29 @@ export default function Sidebar({ eli5Mode, onToggleEli5 }: {
         </button>
         {eli5Mode && (
           <p className="text-xs text-muted-foreground mt-1.5 px-1">
-            Financial terms explained.
+            Financial terms explained with toys & candy
           </p>
         )}
       </div>
-
       <div className="p-3 border-t border-border">
         <div className="text-xs text-muted-foreground">
-          export default function Sidebar() {
-            return (
-              <aside className="theme-panel bg-sidebar/90 border-r border-sidebar-border flex flex-col h-full overflow-y-auto overscroll-contain rounded-none">
-                <div className="p-4 border-b border-sidebar-border">
-                  <div className="flex flex-col items-start">
-                    <div className="text-lg font-bold text-foreground leading-tight">Aliasist Pulse</div>
-                    <div className="text-xs text-muted-foreground leading-tight mt-1">Private Market Dashboard</div>
-                  </div>
-                </div>
-                <div className="px-3 py-3 border-b border-sidebar-border">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">Data Engine</span>
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                    <span className="font-medium text-emerald-400">Active</span>
-                  </div>
-                </div>
-              </aside>
-            );
-          }
->>>>>>> 260eeb03fc51ffe6f577cba43a9e8df29d69b54a
+          <div className="flex items-center gap-1 mb-0.5">
+            <Zap size={10} className="text-primary" />
+            Refreshes every 15 min
+          </div>
+          <div className="text-xs opacity-60">Theme: {theme} · Aliasist.com</div>
+        </div>
+      </div>
+    </aside>
+  );
+}
+
+function timeAgo(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
+}

@@ -39,9 +39,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     document.documentElement.setAttribute("data-theme", "dark");
   }, []);
 
-  return <>{children}</>;
-}
-
   const value = useMemo<ThemeContextValue>(
     () => ({
       theme,

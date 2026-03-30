@@ -10,6 +10,7 @@ import { ThemeProvider } from "./components/theme-provider";
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const NewsPage = lazy(() => import("./pages/NewsPage"));
 const VectorsPage = lazy(() => import("./pages/VectorsPage"));
+const ResearchPage = lazy(() => import("./pages/ResearchPage"));
 const SettingsPage = lazy(() => import("./pages/SettingsPage"));
 
 export default function App() {
@@ -28,6 +29,7 @@ export default function App() {
               <Route path="/" component={Dashboard} />
               <Route path="/news" component={NewsPage} />
               <Route path="/vectors" component={VectorsPage} />
+              <Route path="/research" component={ResearchPage} />
               <Route path="/settings" component={SettingsPage} />
               <Route component={NotFound} />
             </Switch>

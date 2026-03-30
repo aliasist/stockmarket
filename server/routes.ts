@@ -8,6 +8,8 @@ import {
 import { insertWatchlistSchema } from "../shared/schema.js"
 import nodeCron from "node-cron"
 import { getChart, getQuotes } from "./marketData.js"
+import { createConversation, addMessage } from './api/chatbot'
+import { groqChatHandler } from './api/groqChat.js'
 
 const PREDICTION_CACHE_TTL_MS = 5 * 60 * 1000
 
@@ -48,6 +50,7 @@ export async function registerRoutes(app: Express): Promise<void> {
     res.json({
       status: "ok",
       aiConfigured: Boolean(process.env.GEMINI_API_KEY),
+      groqConfigured: Boolean(process.env.GROQ_API_KEY),
       cloudflareConfigured: Boolean(process.env.CLOUDFLARE_API_TOKEN),
       timestamp: new Date().toISOString(),
     })
@@ -231,4 +234,11 @@ export async function registerRoutes(app: Express): Promise<void> {
     clearPredictionCache()
     void runScrub(process.env.GEMINI_API_KEY).catch(console.error)
   })
+
+  // ── Groq AI chat (server-side key) ─────────────────────────────────────
+  app.post("/api/chat", groqChatHandler)
+
+  // ── Chatbot Conversation/Message Endpoints ─────────────────────────────
+  app.post("/api/chatbot/conversation", createConversation)
+  app.post("/api/chatbot/message", addMessage)
 }
