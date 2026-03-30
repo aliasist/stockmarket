@@ -127,7 +127,7 @@ export default function Top50Page() {
               {filtered.length === 0 ? (
                 <div className="p-6 text-center text-sm text-muted-foreground">No companies match</div>
               ) : (
-                <div className={selectedCompany || compareMode ? "divide-y divide-border/40" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-0 divide-y divide-border/30"}>
+                <div className={selectedCompany || compareMode ? "divide-y divide-border/40" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-0 divide-y divide-border/30 stagger-children"}>
                   {filtered.map((co) =>
                     selectedCompany || compareMode ? (
                       <CompanyRowCompact

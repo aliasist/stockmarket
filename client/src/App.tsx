@@ -13,6 +13,7 @@ const VectorsPage = lazy(() => import("./pages/VectorsPage"));
 const ResearchPage = lazy(() => import("./pages/ResearchPage"));
 const SettingsPage = lazy(() => import("./pages/SettingsPage"));
 const Top50Page = lazy(() => import("./pages/Top50Page"));
+const PitchPage = lazy(() => import("./pages/PitchPage"));
 
 export default function App() {
   return (
@@ -33,6 +34,7 @@ export default function App() {
               <Route path="/research" component={ResearchPage} />
               <Route path="/settings" component={SettingsPage} />
               <Route path="/top50" component={Top50Page} />
+              <Route path="/pitch" component={PitchPage} />
               <Route component={NotFound} />
             </Switch>
           </Suspense>

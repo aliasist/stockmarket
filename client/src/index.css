@@ -304,3 +304,195 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ── Design Polish: Page Transition Animations ────────────────────────────── */
+@layer utilities {
+  .fade-in {
+    animation: fadeIn 0.35s ease-out both;
+  }
+  .fade-in-up {
+    animation: fadeInUp 0.4s ease-out both;
+  }
+  .slide-in-right {
+    animation: slideInRight 0.3s ease-out both;
+  }
+  .stagger-children > * {
+    animation: fadeInUp 0.4s ease-out both;
+  }
+  .stagger-children > *:nth-child(1) { animation-delay: 0ms; }
+  .stagger-children > *:nth-child(2) { animation-delay: 60ms; }
+  .stagger-children > *:nth-child(3) { animation-delay: 120ms; }
+  .stagger-children > *:nth-child(4) { animation-delay: 180ms; }
+  .stagger-children > *:nth-child(5) { animation-delay: 240ms; }
+  .stagger-children > *:nth-child(6) { animation-delay: 300ms; }
+  .stagger-children > *:nth-child(7) { animation-delay: 360ms; }
+  .stagger-children > *:nth-child(8) { animation-delay: 420ms; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* ── Design Polish: Glow Button ───────────────────────────────────────────── */
+@layer components {
+  .btn-glow {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.2s ease;
+  }
+  .btn-glow::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 50%, hsl(168 76% 48% / 0.4), transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .btn-glow:hover::before {
+    opacity: 1;
+  }
+  .btn-glow:active {
+    transform: scale(0.98);
+  }
+}
+
+/* ── Design Polish: Number Ticker Animation ───────────────────────────────── */
+@layer utilities {
+  .num-tick {
+    display: inline-block;
+    transition: transform 0.15s ease, color 0.3s ease;
+  }
+  .num-tick.up {
+    animation: tickUp 0.3s ease;
+    color: hsl(142, 76%, 56%);
+  }
+  .num-tick.down {
+    animation: tickDown 0.3s ease;
+    color: hsl(0, 84%, 60%);
+  }
+}
+@keyframes tickUp {
+  0% { transform: translateY(4px); opacity: 0.6; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+@keyframes tickDown {
+  0% { transform: translateY(-4px); opacity: 0.6; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+/* ── Design Polish: Enhanced Theme Panel Hover ────────────────────────────── */
+.theme-panel {
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.theme-panel:hover {
+  border-color: hsl(var(--border) / 0.8);
+}
+
+/* ── Design Polish: Shimmer Loading Animation ─────────────────────────────── */
+@layer utilities {
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--muted) / 0.5) 25%,
+      hsl(var(--muted) / 0.8) 50%,
+      hsl(var(--muted) / 0.5) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+}
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── Design Polish: Signal Badge Pulse ────────────────────────────────────── */
+.signal-bullish {
+  animation: pulseBullish 3s ease infinite;
+}
+.signal-bearish {
+  animation: pulseBearish 3s ease infinite;
+}
+@keyframes pulseBullish {
+  0%, 100% { box-shadow: 0 0 0 0 hsl(142 76% 56% / 0.3); }
+  50% { box-shadow: 0 0 8px 2px hsl(142 76% 56% / 0.15); }
+}
+@keyframes pulseBearish {
+  0%, 100% { box-shadow: 0 0 0 0 hsl(0 84% 60% / 0.3); }
+  50% { box-shadow: 0 0 8px 2px hsl(0 84% 60% / 0.15); }
+}
+
+/* ── Design Polish: Custom Scrollbar ─────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
+}
+
+/* ── Design Polish: Ticker Tape Enhancement ───────────────────────────────── */
+.ticker-tape {
+  overflow: hidden;
+  white-space: nowrap;
+}
+.ticker-tape-track {
+  display: inline-flex;
+  animation: tickerScroll 40s linear infinite;
+}
+.ticker-tape-track:hover {
+  animation-play-state: paused;
+}
+@keyframes tickerScroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* ── Design Polish: Card Entrance Animation ───────────────────────────────── */
+.card-appear {
+  animation: cardAppear 0.3s ease-out both;
+}
+@keyframes cardAppear {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* ── Design Polish: Pitch Memo Print Styles ───────────────────────────────── */
+@media print {
+  .no-print { display: none !important; }
+  body { background: white !important; color: black !important; }
+  .pitch-memo { 
+    background: white !important; 
+    color: black !important;
+    font-size: 11pt;
+    max-width: 100%;
+  }
+  .pitch-memo .theme-panel {
+    background: white !important;
+    border: 1px solid #ddd !important;
+    box-shadow: none !important;
+    break-inside: avoid;
+  }
+  .pitch-memo h1, .pitch-memo h2, .pitch-memo h3 {
+    color: black !important;
+  }
+  .pitch-memo .text-muted-foreground {
+    color: #555 !important;
+  }
+}

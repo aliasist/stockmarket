@@ -5,10 +5,14 @@ import { cn } from "@/lib/utils";
 import Sidebar from "../components/Sidebar";
 import TickerTape from "../components/TickerTape";
 import QuoteCard from "../components/QuoteCard";
-import PriceChart from "../components/PriceChart";
+import PriceChart from "../components/PriceChart"; // kept for potential reuse
 import PredictivePanel from "../components/PredictivePanel";
 import NewsFeed from "../components/NewsFeed";
 import { AnalyticsSpikes } from "../components/AnalyticsSpikes";
+import TradingViewWidget from "../components/TradingViewWidget";
+import SentimentGauge from "../components/SentimentGauge";
+import DCFCalculator from "../components/DCFCalculator";
+import CompetitionTimer from "../components/CompetitionTimer";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -54,7 +58,10 @@ export default function Dashboard() {
     },
   });
 
-  const h = health as any;
+  const h = health as { aiConfigured?: boolean } | undefined;
+
+  // Get current quote data for selected ticker
+  const selectedQuote = quotes.find((q) => q.ticker === selectedTicker);
 
   return (
     <div className="dashboard-grid app-shell">
@@ -103,11 +110,13 @@ export default function Dashboard() {
             </Button>
           </div>
         </div>
+
         <div className="mt-8">
           <AnalyticsSpikes />
         </div>
 
         <div className="flex-1 overflow-y-auto overscroll-contain p-6 space-y-6">
+          {/* Watchlist */}
           <section>
             <div className="theme-kicker mb-3">
               {eli5Mode ? "Your Toy Box" : "Watchlist"}
@@ -131,15 +140,33 @@ export default function Dashboard() {
             )}
           </section>
 
+          {/* Chart row: TradingView chart (primary) + right column */}
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-            <div className="xl:col-span-2">
-              <PriceChart ticker={selectedTicker} />
+            <div className="xl:col-span-2 space-y-6">
+              {/* TradingView advanced chart replaces PriceChart */}
+              <TradingViewWidget ticker={selectedTicker} height={420} />
             </div>
-            <div>
+            <div className="space-y-4">
               <PredictivePanel ticker={selectedTicker} eli5Mode={eli5Mode} />
+              <SentimentGauge ticker={selectedTicker} />
             </div>
           </div>
 
+          {/* DCF + Competition Timer row */}
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <div className="xl:col-span-2">
+              <DCFCalculator
+                ticker={selectedTicker}
+                currentPrice={selectedQuote?.price}
+                recentRevenue={10}
+              />
+            </div>
+            <div>
+              <CompetitionTimer />
+            </div>
+          </div>
+
+          {/* News feed */}
           <section>
             <div className="theme-kicker mb-3">
               {eli5Mode ? "Today's Stories" : "Journalism Intelligence (Latest)"}

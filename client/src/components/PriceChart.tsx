@@ -72,7 +72,7 @@ export default function PriceChart({ ticker }: { ticker: string }) {
       </div>
 
       {isLoading ? (
-        <div className="h-48 skeleton" />
+        <div className="h-48 skeleton shimmer" />
       ) : (
         <ResponsiveContainer width="100%" height={200}>
           <AreaChart data={chartData} margin={{ top: 5, right: 0, left: 0, bottom: 0 }}>

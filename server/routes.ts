@@ -10,6 +10,7 @@ import nodeCron from "node-cron"
 import { getChart, getQuotes } from "./marketData.js"
 import { createConversation, addMessage } from './api/chatbot'
 import { groqChatHandler } from './api/groqChat.js'
+import { getKeyMetrics, getAnalystRatings, getComparables, getEarningsCalendar, getIncomeStatement, getBalanceSheet, getProfile } from './fmpService.js'
 
 const PREDICTION_CACHE_TTL_MS = 5 * 60 * 1000
 
@@ -52,6 +53,7 @@ export async function registerRoutes(app: Express): Promise<void> {
       aiConfigured: Boolean(process.env.GEMINI_API_KEY),
       groqConfigured: Boolean(process.env.GROQ_API_KEY),
       cloudflareConfigured: Boolean(process.env.CLOUDFLARE_API_TOKEN),
+      fmpConfigured: Boolean(process.env.FMP_API_KEY),
       timestamp: new Date().toISOString(),
     })
   })
@@ -241,4 +243,95 @@ export async function registerRoutes(app: Express): Promise<void> {
   // ── Chatbot Conversation/Message Endpoints ─────────────────────────────
   app.post("/api/chatbot/conversation", createConversation)
   app.post("/api/chatbot/message", addMessage)
+
+  // ── Financial Modeling Prep (FMP) Endpoints ──────────────────────────────
+
+  app.get("/api/fmp/profile/:ticker", async (req, res) => {
+    try {
+      const result = await getProfile(req.params.ticker.toUpperCase())
+      res.json(result)
+    } catch (error) {
+      console.error("FMP profile error:", error)
+      res.status(500).json({ message: "Failed to fetch company profile" })
+    }
+  })
+
+  app.get("/api/fmp/metrics/:ticker", async (req, res) => {
+    try {
+      const result = await getKeyMetrics(req.params.ticker.toUpperCase())
+      res.json(result)
+    } catch (error) {
+      console.error("FMP metrics error:", error)
+      res.status(500).json({ message: "Failed to fetch key metrics" })
+    }
+  })
+
+  app.get("/api/fmp/ratings/:ticker", async (req, res) => {
+    try {
+      const result = await getAnalystRatings(req.params.ticker.toUpperCase())
+      res.json(result)
+    } catch (error) {
+      console.error("FMP ratings error:", error)
+      res.status(500).json({ message: "Failed to fetch analyst ratings" })
+    }
+  })
+
+  app.get("/api/fmp/peers/:ticker", async (req, res) => {
+    try {
+      const result = await getComparables(req.params.ticker.toUpperCase())
+      res.json(result)
+    } catch (error) {
+      console.error("FMP peers error:", error)
+      res.status(500).json({ message: "Failed to fetch peer tickers" })
+    }
+  })
+
+  app.get("/api/fmp/earnings/:ticker", async (req, res) => {
+    try {
+      const result = await getEarningsCalendar(req.params.ticker.toUpperCase())
+      res.json(result)
+    } catch (error) {
+      console.error("FMP earnings error:", error)
+      res.status(500).json({ message: "Failed to fetch earnings calendar" })
+    }
+  })
+
+  app.get("/api/fmp/income/:ticker", async (req, res) => {
+    try {
+      const result = await getIncomeStatement(req.params.ticker.toUpperCase())
+      res.json(result)
+    } catch (error) {
+      console.error("FMP income error:", error)
+      res.status(500).json({ message: "Failed to fetch income statement" })
+    }
+  })
+
+  app.get("/api/fmp/balance/:ticker", async (req, res) => {
+    try {
+      const result = await getBalanceSheet(req.params.ticker.toUpperCase())
+      res.json(result)
+    } catch (error) {
+      console.error("FMP balance error:", error)
+      res.status(500).json({ message: "Failed to fetch balance sheet" })
+    }
+  })
+
+  app.get("/api/fmp/pitch/:ticker", async (req, res) => {
+    try {
+      const ticker = req.params.ticker.toUpperCase()
+      const [profile, metrics, ratings, peers, earnings, income, balance] = await Promise.all([
+        getProfile(ticker),
+        getKeyMetrics(ticker),
+        getAnalystRatings(ticker),
+        getComparables(ticker),
+        getEarningsCalendar(ticker),
+        getIncomeStatement(ticker),
+        getBalanceSheet(ticker),
+      ])
+      res.json({ profile, metrics, ratings, peers, earnings, income, balance })
+    } catch (error) {
+      console.error("FMP pitch error:", error)
+      res.status(500).json({ message: "Failed to fetch pitch data" })
+    }
+  })
 }
