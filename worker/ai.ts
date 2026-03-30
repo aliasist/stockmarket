@@ -83,22 +83,25 @@ export async function callGemini(env: Env, prompt: string): Promise<string | nul
 
 // ── FMP (Financial Modeling Prep) ────────────────────────────────────────────
 
-const FMP_BASE = "https://financialmodelingprep.com/api/v3"
+// New FMP stable API (post August 2025)
+const FMP_BASE = "https://financialmodelingprep.com/stable"
 const fmpCache = new Map<string, { value: unknown; expiresAt: number }>()
-const FMP_TTL = 5 * 60 * 1000 // 5 minutes
+const FMP_TTL = 5 * 60 * 1000
 
-async function fmpGet<T>(env: Env, path: string): Promise<T | null> {
+async function fmpGet<T>(env: Env, endpoint: string, params: Record<string, string> = {}): Promise<T | null> {
   if (!env.FMP_API_KEY) return null
-  const key = path
-  const cached = fmpCache.get(key)
+  const cacheKey = endpoint + JSON.stringify(params)
+  const cached = fmpCache.get(cacheKey)
   if (cached && cached.expiresAt > Date.now()) return cached.value as T
 
   try {
-    const sep = path.includes("?") ? "&" : "?"
-    const res = await fetch(`${FMP_BASE}${path}${sep}apikey=${env.FMP_API_KEY}`)
+    const qs = new URLSearchParams({ ...params, apikey: env.FMP_API_KEY }).toString()
+    const res = await fetch(`${FMP_BASE}/${endpoint}?${qs}`)
     if (!res.ok) return null
     const data = await res.json() as T
-    fmpCache.set(key, { value: data, expiresAt: Date.now() + FMP_TTL })
+    // Check for FMP error message
+    if (data && typeof data === "object" && "Error Message" in (data as object)) return null
+    fmpCache.set(cacheKey, { value: data, expiresAt: Date.now() + FMP_TTL })
     return data
   } catch {
     return null
@@ -106,68 +109,83 @@ async function fmpGet<T>(env: Env, path: string): Promise<T | null> {
 }
 
 export async function getFmpProfile(env: Env, ticker: string) {
-  const data = await fmpGet<any[]>(env, `/profile/${ticker}`)
-  return data?.[0] ?? null
+  // Try stable profile first, then quote as fallback
+  const data = await fmpGet<any[]>(env, "profile", { symbol: ticker })
+  if (data?.[0]) return data[0]
+  // Fallback: quote endpoint
+  const quote = await fmpGet<any[]>(env, "quote", { symbol: ticker })
+  return quote?.[0] ?? null
 }
 
 export async function getFmpMetrics(env: Env, ticker: string) {
-  const data = await fmpGet<any[]>(env, `/key-metrics/${ticker}?limit=5`)
-  return data ?? []
+  const data = await fmpGet<any[]>(env, "key-metrics", { symbol: ticker, limit: "5", period: "annual" })
+  if (data?.length) return data
+  // Fallback: TTM metrics
+  const ttm = await fmpGet<any>(env, "key-metrics-ttm", { symbol: ticker })
+  return ttm ? [ttm] : []
 }
 
 export async function getFmpRatings(env: Env, ticker: string) {
-  const data = await fmpGet<any[]>(env, `/analyst-stock-recommendations/${ticker}?limit=10`)
-  if (!data?.length) return { buy: 0, hold: 0, sell: 0, strongBuy: 0, strongSell: 0, avgPriceTarget: 0, numAnalysts: 0, consensus: "Hold" }
-  let buy = 0, hold = 0, sell = 0, strongBuy = 0, strongSell = 0, targets: number[] = []
-  for (const r of data) {
-    buy += r.analystRatingsbuy ?? 0
-    hold += r.analystRatingsHold ?? 0
-    sell += r.analystRatingsSell ?? 0
-    strongBuy += r.analystRatingsStrongBuy ?? 0
-    strongSell += r.analystRatingsStrongSell ?? 0
-    if (r.priceTarget) targets.push(r.priceTarget)
+  const empty = { buy: 0, hold: 0, sell: 0, strongBuy: 0, strongSell: 0, avgPriceTarget: 0, numAnalysts: 0, consensus: "Hold" }
+  // Try ratings-snapshot (new endpoint)
+  const snap = await fmpGet<any>(env, "ratings-snapshot", { symbol: ticker })
+  if (snap && !Array.isArray(snap)) {
+    return {
+      buy: snap.ratingsBuy ?? 0,
+      hold: snap.ratingsHold ?? 0,
+      sell: snap.ratingsSell ?? 0,
+      strongBuy: snap.ratingsStrongBuy ?? 0,
+      strongSell: snap.ratingsStrongSell ?? 0,
+      avgPriceTarget: snap.priceTarget ?? 0,
+      numAnalysts: snap.ratingCount ?? 0,
+      consensus: snap.rating ?? "Hold",
+    }
   }
-  const total = buy + hold + sell + strongBuy + strongSell
-  const avgPriceTarget = targets.length ? targets.reduce((a, b) => a + b, 0) / targets.length : 0
-  const bullish = buy + strongBuy
-  const bearish = sell + strongSell
-  const consensus = bullish > bearish ? (strongBuy > buy ? "Strong Buy" : "Buy") : bearish > bullish ? (strongSell > sell ? "Strong Sell" : "Sell") : "Hold"
-  return { buy, hold, sell, strongBuy, strongSell, avgPriceTarget: +avgPriceTarget.toFixed(2), numAnalysts: total, consensus }
+  // Fallback: analyst estimates
+  const est = await fmpGet<any[]>(env, "analyst-estimates", { symbol: ticker, limit: "1", period: "annual" })
+  if (est?.[0]) {
+    const e = est[0]
+    return { ...empty, avgPriceTarget: e.priceTarget ?? 0, consensus: e.analystConsensus ?? "Hold" }
+  }
+  return empty
 }
 
 export async function getFmpPeers(env: Env, ticker: string): Promise<string[]> {
-  const data = await fmpGet<{ peersList?: string[] }>(env, `/stock-peers/${ticker}`)
-  return data?.peersList?.slice(0, 8) ?? []
+  const data = await fmpGet<any>(env, "stock-peers", { symbol: ticker })
+  if (Array.isArray(data)) return data.slice(0, 8)
+  if (data?.peersList) return data.peersList.slice(0, 8)
+  if (data?.peers) return data.peers.slice(0, 8)
+  return []
 }
 
 export async function getFmpEarnings(env: Env, ticker: string) {
-  const data = await fmpGet<any[]>(env, `/historical/earning_calendar/${ticker}?limit=8`)
+  const data = await fmpGet<any[]>(env, "earnings", { symbol: ticker, limit: "8" })
   return (data ?? []).map((e: any) => ({
     date: e.date,
-    eps: e.eps ?? null,
+    eps: e.eps ?? e.epsActual ?? null,
     epsEstimated: e.epsEstimated ?? null,
-    revenue: e.revenue ?? null,
+    revenue: e.revenue ?? e.revenueActual ?? null,
     revenueEstimated: e.revenueEstimated ?? null,
   }))
 }
 
 export async function getFmpIncome(env: Env, ticker: string) {
-  const data = await fmpGet<any[]>(env, `/income-statement/${ticker}?limit=5&period=annual`)
+  const data = await fmpGet<any[]>(env, "income-statement", { symbol: ticker, limit: "5", period: "annual" })
   return (data ?? []).map((e: any) => ({
-    year: new Date(e.date).getFullYear(),
+    year: e.calendarYear ?? new Date(e.date ?? Date.now()).getFullYear(),
     revenue: e.revenue ?? 0,
     netIncome: e.netIncome ?? 0,
     grossProfit: e.grossProfit ?? 0,
     operatingIncome: e.operatingIncome ?? 0,
-    eps: e.eps ?? 0,
+    eps: e.eps ?? e.epsdiluted ?? 0,
     ebitda: e.ebitda ?? 0,
   }))
 }
 
 export async function getFmpBalance(env: Env, ticker: string) {
-  const data = await fmpGet<any[]>(env, `/balance-sheet-statement/${ticker}?limit=5&period=annual`)
+  const data = await fmpGet<any[]>(env, "balance-sheet-statement", { symbol: ticker, limit: "5", period: "annual" })
   return (data ?? []).map((e: any) => ({
-    year: new Date(e.date).getFullYear(),
+    year: e.calendarYear ?? new Date(e.date ?? Date.now()).getFullYear(),
     totalDebt: e.totalDebt ?? 0,
     cashAndEquivalents: e.cashAndCashEquivalents ?? 0,
     totalAssets: e.totalAssets ?? 0,
