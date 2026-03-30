@@ -2,7 +2,7 @@ import { Link } from "wouter";
 import { useHashLocation } from "wouter/use-hash-location";
 import {
   LayoutDashboard, Newspaper, TrendingUp, Settings,
-  Zap, Brain, Moon, SunMedium, MessageSquare
+  Zap, Brain, Moon, SunMedium, MessageSquare, Globe2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
@@ -22,6 +22,7 @@ const navItems = [
   { href: "/news", label: "News Feed", icon: Newspaper },
   { href: "/vectors", label: "Market Vectors", icon: TrendingUp },
   { href: "/research", label: "AI Research", icon: MessageSquare },
+  { href: "/top50", label: "Top 50 Companies", icon: Globe2 },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
