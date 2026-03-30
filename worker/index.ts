@@ -1,5 +1,18 @@
 import { z } from "zod"
-import { generateEli5WithAI, generatePredictionWithAI } from "./ai.js"
+import {
+  generateEli5WithAI,
+  generatePredictionWithAI,
+  callGroq,
+  getFmpPitchBundle,
+  getFmpProfile,
+  getFmpMetrics,
+  getFmpRatings,
+  getFmpPeers,
+  getFmpEarnings,
+  getFmpIncome,
+  getFmpBalance,
+  generatePitchMemo,
+} from "./ai.js"
 import { getChart, getQuotes } from "./marketData.js"
 import { runScrub } from "./scrub.js"
 import { ensureSchema, storage } from "./storage.js"
@@ -93,7 +106,10 @@ async function handleApi(request: Request, env: Env): Promise<Response> {
     return json({
       status: "ok",
       aiConfigured: Boolean(env.AI),
-      aiProvider: "cloudflare-workers-ai",
+      aiProvider: env.GROQ_API_KEY ? "groq" : env.GEMINI_API_KEY ? "gemini" : "cloudflare-workers-ai",
+      groqConfigured: Boolean(env.GROQ_API_KEY),
+      geminiConfigured: Boolean(env.GEMINI_API_KEY),
+      fmpConfigured: Boolean(env.FMP_API_KEY),
       cloudflareConfigured: Boolean(env.DB),
       timestamp: new Date().toISOString(),
     })
@@ -205,6 +221,56 @@ async function handleApi(request: Request, env: Env): Promise<Response> {
     predictionCache.clear()
     await runScrub(env)
     return json({ message: "Scrub triggered" })
+  }
+
+  // ── AI Chat (Groq proxy) ───────────────────────────────────────────────────
+  if (pathname === "/api/chat" && request.method === "POST") {
+    if (!env.GROQ_API_KEY) {
+      return json({ error: "GROQ_API_KEY not configured", reply: null }, { status: 503 })
+    }
+    const body = await request.json() as { message?: string; messages?: Array<{ role: string; content: string }>; model?: string }
+    let messages = body.messages
+    if (!messages?.length && body.message) {
+      messages = [{ role: "user", content: body.message }]
+    }
+    if (!messages?.length) return json({ error: "No messages provided", reply: null }, { status: 400 })
+    const normalized = messages
+      .filter((m) => m.content)
+      .map((m) => ({ role: (m.role === "assistant" ? "assistant" : m.role === "system" ? "system" : "user") as "system" | "user" | "assistant", content: m.content }))
+    const reply = await callGroq(env, normalized, body.model ?? "llama-3.3-70b-versatile", 2048)
+    if (!reply) return json({ error: "Groq request failed", reply: null }, { status: 502 })
+    return json({ reply })
+  }
+
+  // ── FMP endpoints ─────────────────────────────────────────────────────────
+  if (pathname.startsWith("/api/fmp/")) {
+    const fmpPath = pathname.slice("/api/fmp/".length)
+    const parts = fmpPath.split("/")
+    const resource = parts[0]
+    const ticker = parts[1]?.toUpperCase()
+
+    if (!ticker) return json({ error: "Ticker required" }, { status: 400 })
+
+    if (resource === "pitch") {
+      const bundle = await getFmpPitchBundle(env, ticker)
+      // Also try to get current price from Yahoo
+      let currentPrice: number | undefined
+      try {
+        const quotes = await getQuotes([ticker])
+        currentPrice = quotes[0]?.price
+      } catch { /* no price */ }
+      // Generate AI pitch memo if Groq is available
+      const aiSections = await generatePitchMemo(env, ticker, bundle, currentPrice)
+      return json({ ...bundle, currentPrice, aiSections })
+    }
+    if (resource === "profile") return json(await getFmpProfile(env, ticker))
+    if (resource === "metrics") return json(await getFmpMetrics(env, ticker))
+    if (resource === "ratings") return json(await getFmpRatings(env, ticker))
+    if (resource === "peers") return json(await getFmpPeers(env, ticker))
+    if (resource === "earnings") return json(await getFmpEarnings(env, ticker))
+    if (resource === "income") return json(await getFmpIncome(env, ticker))
+    if (resource === "balance") return json(await getFmpBalance(env, ticker))
+    return notFound()
   }
 
   return notFound()

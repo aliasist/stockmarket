@@ -7,11 +7,16 @@ export interface Env {
     fetch(request: Request): Promise<Response>
   }
   ANALYTICS_ENGINE: AnalyticsEngineDataset
+  // API keys — set as Cloudflare Worker Secrets
+  GROQ_API_KEY?: string
+  GEMINI_API_KEY?: string
+  FMP_API_KEY?: string
 }
 
 export interface AnalyticsEngineDataset {
   query(query: string, params?: Record<string, unknown>): Promise<any>
   insert(data: Record<string, unknown>): Promise<any>
+  writeDataPoint(data: { blobs?: string[]; doubles?: number[]; indexes?: string[] }): void
 }
 
 export interface RawArticle {
