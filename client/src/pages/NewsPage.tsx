@@ -34,7 +34,15 @@ export default function NewsPage() {
       <Sidebar eli5Mode={eli5Mode} onToggleEli5={() => setEli5Mode(!eli5Mode)} />
       <div className="main-content flex flex-col">
         <TickerTape />
-        <div className="theme-topbar px-6 py-4 border-b border-border">
+        <div className="theme-topbar px-6 py-4 border-b border-border" style={{ position: "relative", overflow: "hidden" }}>
+          {/* Subtle neural intelligence banner */}
+          <div style={{
+            position: "absolute", inset: 0,
+            backgroundImage: "url('/aliasist-brain.png')",
+            backgroundSize: "cover", backgroundPosition: "center 25%",
+            opacity: 0.07, filter: "saturate(1.5)",
+            pointerEvents: "none",
+          }} />
           <div className="theme-kicker mb-1">Narrative Scanner</div>
           <h1 className="theme-title text-2xl text-foreground">
             {eli5Mode ? "📰 The News Sorter" : "Journalism Intelligence Feed"}

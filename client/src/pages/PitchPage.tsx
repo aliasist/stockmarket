@@ -408,7 +408,15 @@ Return a JSON object with these exact keys:
 
       <div className="main-content flex flex-col min-h-0">
         {/* ── Topbar ──────────────────────────────── */}
-        <header className="theme-topbar shrink-0 px-6 py-4 border-b border-border flex items-center justify-between print-hide">
+        <header className="theme-topbar shrink-0 px-6 py-4 border-b border-border flex items-center justify-between print-hide" style={{ position: "relative", overflow: "hidden" }}>
+          {/* Subtle street-level cyberpunk banner in pitch header */}
+          <div style={{
+            position: "absolute", inset: 0,
+            backgroundImage: "url('/aliasist-street.png')",
+            backgroundSize: "cover", backgroundPosition: "center 40%",
+            opacity: 0.08, filter: "saturate(1.4)",
+            pointerEvents: "none",
+          }} />
           <div>
             <div className="theme-kicker mb-1">Groq · FMP Data</div>
             <h1 className="theme-title text-2xl text-foreground">Stock Pitch Builder</h1>

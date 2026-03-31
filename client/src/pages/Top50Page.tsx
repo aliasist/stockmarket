@@ -47,7 +47,15 @@ export default function Top50Page() {
 
       <div className="main-content flex flex-col h-full overflow-hidden">
         {/* Header */}
-        <div className="theme-topbar flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
+        <div className="theme-topbar flex items-center justify-between px-6 py-4 border-b border-border shrink-0" style={{ position: "relative", overflow: "hidden" }}>
+          {/* Subtle orbital intelligence banner */}
+          <div style={{
+            position: "absolute", inset: 0,
+            backgroundImage: "url('/aliasist-orbit.png')",
+            backgroundSize: "cover", backgroundPosition: "center 20%",
+            opacity: 0.07, filter: "saturate(1.5)",
+            pointerEvents: "none",
+          }} />
           <div>
             <div className="theme-kicker mb-1">Market Intelligence</div>
             <h1 className="theme-title text-xl text-foreground flex items-center gap-2">

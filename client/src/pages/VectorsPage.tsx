@@ -49,7 +49,15 @@ export default function VectorsPage() {
       <Sidebar eli5Mode={eli5Mode} onToggleEli5={() => setEli5Mode(!eli5Mode)} />
       <div className="main-content flex flex-col">
         <TickerTape />
-        <div className="theme-topbar px-6 py-4 border-b border-border">
+        <div className="theme-topbar px-6 py-4 border-b border-border" style={{ position: "relative", overflow: "hidden" }}>
+          {/* Subtle NYSE abduction scan banner */}
+          <div style={{
+            position: "absolute", inset: 0,
+            backgroundImage: "url('/aliasist-topdown.png')",
+            backgroundSize: "cover", backgroundPosition: "center 30%",
+            opacity: 0.07, filter: "saturate(1.5)",
+            pointerEvents: "none",
+          }} />
           <div className="theme-kicker mb-1">Signal Mapping</div>
           <h1 className="theme-title text-2xl text-foreground">
             {eli5Mode ? "🔭 The Signal Telescope" : "Logical Market Vectors"}

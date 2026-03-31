@@ -26,6 +26,17 @@ export default function SplashScreen({ onDone }: { onDone: () => void }) {
         pointerEvents: phase === "out" ? "none" : "all",
       }}
     >
+      {/* Hero brand image — faded behind everything */}
+      <div style={{
+        position: "absolute",
+        inset: 0,
+        backgroundImage: "url('/aliasist-hero.png')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        opacity: 0.12,
+        filter: "blur(2px) saturate(1.4)",
+      }} />
+
       {/* Dot grid background */}
       <div style={{
         position: "absolute",

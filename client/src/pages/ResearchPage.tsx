@@ -26,7 +26,15 @@ export default function ResearchPage() {
       <Sidebar eli5Mode={eli5Mode} onToggleEli5={() => setEli5Mode(!eli5Mode)} />
       <div className="main-content flex flex-col min-h-0">
         {/* Header */}
-        <header className="theme-topbar shrink-0 px-6 py-5 border-b border-border">
+        <header className="theme-topbar shrink-0 px-6 py-5 border-b border-border" style={{ position: "relative", overflow: "hidden" }}>
+          {/* Subtle banner image in header background */}
+          <div style={{
+            position: "absolute", inset: 0,
+            backgroundImage: "url('/aliasist-command.png')",
+            backgroundSize: "cover", backgroundPosition: "center 30%",
+            opacity: 0.07, filter: "saturate(1.6)",
+            pointerEvents: "none",
+          }} />
           <div className="flex items-start justify-between gap-4">
             <div>
               <div className="theme-kicker mb-1">Groq · Market-Aware</div>

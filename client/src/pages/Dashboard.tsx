@@ -84,7 +84,15 @@ export default function Dashboard() {
         <div className={cn(
           "theme-topbar flex flex-col sm:flex-row sm:items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b border-border gap-3",
           eli5Mode && "eli5-active"
-        )}>
+        )} style={{ position: "relative", overflow: "hidden" }}>
+          {/* Subtle UFO city banner behind dashboard header */}
+          <div style={{
+            position: "absolute", inset: 0,
+            backgroundImage: "url('/aliasist-hero.png')",
+            backgroundSize: "cover", backgroundPosition: "center 60%",
+            opacity: 0.06, filter: "saturate(1.8)",
+            pointerEvents: "none",
+          }} />
           <div className="min-w-0 pl-8 sm:pl-0">
             <div className="theme-kicker mb-1.5">
               {eli5Mode ? "Learning Interface" : "// ALIASIST · SIGNAL DECK"}
