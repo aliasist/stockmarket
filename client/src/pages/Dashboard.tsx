@@ -13,6 +13,9 @@ import TradingViewWidget from "../components/TradingViewWidget";
 import SentimentGauge from "../components/SentimentGauge";
 import DCFCalculator from "../components/DCFCalculator";
 import CompetitionTimer from "../components/CompetitionTimer";
+import NvdaFcfCounter from "../components/NvdaFcfCounter";
+import InvestmentCalculator from "../components/InvestmentCalculator";
+import NvdaRadarChart from "../components/NvdaRadarChart";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -37,7 +40,7 @@ interface ScrubRun {
 
 export default function Dashboard() {
   const [eli5Mode, setEli5Mode] = useState(false);
-  const [selectedTicker, setSelectedTicker] = useState("SPY");
+  const [selectedTicker, setSelectedTicker] = useState("NVDA");
   const qc = useQueryClient();
   const { toast } = useToast();
 
@@ -186,8 +189,19 @@ export default function Dashboard() {
                 recentRevenue={10}
               />
             </div>
-            <div>
+            <div className="space-y-4">
               <CompetitionTimer />
+              <NvdaFcfCounter />
+            </div>
+          </div>
+
+          {/* NVDA Competition Analytics row */}
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <div className="xl:col-span-2">
+              <InvestmentCalculator />
+            </div>
+            <div>
+              <NvdaRadarChart />
             </div>
           </div>
 

@@ -5,16 +5,17 @@ interface CompetitionTimerProps {
   deadline?: Date;
 }
 
-const DEFAULT_DEADLINE = new Date("2026-04-04T23:59:59-05:00"); // CDT = UTC-5
+const DEFAULT_DEADLINE = new Date("2026-04-03T23:59:59-05:00"); // CDT = UTC-5
 
 const DEFAULT_CHECKLIST_ITEMS = [
-  "Research business model",
-  "Analyze 3yr financials",
-  "Build DCF model",
-  "Identify 3 catalysts",
-  "Draft investment thesis",
-  "Stress test bear case",
-  "Generate pitch memo",
+  "Stock selected: NVDA ✓",
+  "10-factor analysis complete ✓",
+  "Financials deep-dive done ✓",
+  "Bear case rebuttal ready ✓",
+  "Pitch deck built (15 slides) ✓",
+  "Interactive web app live ✓",
+  "Record 2-minute video",
+  "Submit by April 3",
 ];
 
 const LS_KEY = "pitch_checklist";
