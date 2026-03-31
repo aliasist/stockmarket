@@ -9,10 +9,10 @@
 @layer base {
   :root,
   :root[data-theme="dark"] {
-    --background: 158 40% 6%;
-    --foreground: 158 18% 94%;
+    --background: 158 45% 5%;
+    --foreground: 158 10% 97%;
 
-    --card: 158 35% 9%;
+    --card: 158 32% 11%;
     --card-foreground: 158 18% 94%;
 
     --popover: 158 35% 8%;
@@ -21,11 +21,11 @@
     --primary: 165 90% 42%;
     --primary-foreground: 158 40% 6%;
 
-    --secondary: 158 25% 13%;
+    --secondary: 158 28% 16%;
     --secondary-foreground: 158 14% 82%;
 
-    --muted: 158 22% 11%;
-    --muted-foreground: 158 12% 45%;
+    --muted: 158 28% 13%;
+    --muted-foreground: 158 14% 56%;
 
     --accent: 165 90% 42%;
     --accent-foreground: 158 40% 6%;
@@ -43,7 +43,7 @@
     --font-mono: "JetBrains Mono", "Space Mono", monospace;
     --font-serif: "Source Serif 4", serif;
 
-    --sidebar: 158 40% 7%;
+    --sidebar: 158 40% 6%;
     --sidebar-foreground: 158 18% 94%;
     --sidebar-border: 165 60% 42% / 0.1;
     --sidebar-ring: 165 90% 42%;
@@ -59,15 +59,15 @@
     --chart-5: 196 100% 67%;
 
     --glow-primary: 165 90% 42%;
-    --panel-shadow: 0 0 0 1px rgba(10,203,155,0.1), 0 8px 32px rgba(0,0,0,0.5);
+    --panel-shadow: 0 0 0 1px rgba(10,203,155,0.14), 0 4px 16px rgba(0,0,0,0.4), 0 1px 3px rgba(0,0,0,0.3);
     --backdrop-grid: rgba(10, 203, 155, 0.04);
     --body-gradient:
       radial-gradient(ellipse at top left, rgba(10,203,155,0.07) 0%, transparent 35%),
       radial-gradient(ellipse at bottom right, rgba(10,203,155,0.04) 0%, transparent 30%),
       linear-gradient(180deg, hsl(158 40% 6%) 0%, hsl(158 38% 5%) 100%);
-    --topbar-background: hsl(158 40% 7% / 0.96);
-    --panel-background: hsl(158 35% 9% / 0.95);
-    --panel-soft-background: hsl(158 30% 10% / 0.8);
+    --topbar-background: hsl(158 38% 8% / 0.98);
+    --panel-background: hsl(158 32% 11% / 0.97);
+    --panel-soft-background: hsl(158 28% 13% / 0.85);
     --logo-ring-background:
       radial-gradient(circle at 40% 40%, rgba(10,203,155,0.25), transparent 50%),
       linear-gradient(145deg, hsl(158 35% 14%), hsl(158 35% 8%));
@@ -201,12 +201,13 @@
 
 .theme-panel {
   background: var(--panel-background);
-  border: 1px solid rgba(10, 203, 155, 0.12);
-  box-shadow: var(--panel-shadow);
+  border: 1px solid rgba(10, 203, 155, 0.14);
+  box-shadow: var(--panel-shadow), inset 0 1px 0 rgba(255,255,255,0.03);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 .theme-panel:hover {
-  border-color: rgba(10, 203, 155, 0.22);
+  border-color: rgba(10, 203, 155, 0.24);
+  box-shadow: var(--panel-shadow), inset 0 1px 0 rgba(255,255,255,0.04), 0 0 0 1px rgba(10,203,155,0.08);
 }
 
 .theme-panel-soft {
@@ -218,13 +219,13 @@
 }
 
 .theme-kicker {
-  @apply text-[11px] font-semibold uppercase tracking-[0.28em] text-primary/80;
   font-family: var(--font-mono);
-  letter-spacing: 0.15em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  font-size: 0.625rem;
-  color: hsl(var(--primary));
-  opacity: 0.85;
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: hsl(var(--primary) / 0.9);
+  opacity: 1;
 }
 
 .status-badge {
@@ -245,7 +246,10 @@
 }
 
 .theme-title {
-  @apply font-semibold tracking-tight;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: hsl(var(--foreground));
 }
 
 .theme-chip {
@@ -329,6 +333,47 @@
   .dashboard-grid {
     grid-template-columns: 200px 1fr;
   }
+}
+
+/* Section separator — teal accent line */
+.section-divider {
+  height: 1px;
+  background: linear-gradient(90deg, rgba(10,203,155,0.25) 0%, rgba(10,203,155,0.05) 60%, transparent 100%);
+  margin: 0.5rem 0;
+}
+
+/* Elevated surface — lighter than card, for highlighted items */
+.surface-elevated {
+  background: hsl(158 28% 14% / 0.9);
+  border: 1px solid rgba(10,203,155,0.18);
+}
+
+/* Deep surface — darker than background, for inset areas */
+.surface-inset {
+  background: hsl(158 45% 4% / 0.6);
+  border: 1px solid rgba(10,203,155,0.07);
+}
+
+/* Panel section label with teal left accent */
+.panel-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: hsl(var(--primary) / 0.85);
+}
+.panel-label::before {
+  content: '';
+  display: block;
+  width: 2px;
+  height: 10px;
+  background: hsl(var(--primary) / 0.7);
+  border-radius: 1px;
+  flex-shrink: 0;
 }
 
 /* ── Design Polish: Page Transition Animations ────────────────────────────── */

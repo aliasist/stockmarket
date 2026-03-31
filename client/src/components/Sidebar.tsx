@@ -85,8 +85,8 @@ export default function Sidebar({ eli5Mode, onToggleEli5 }: { eli5Mode: boolean;
                   className={cn(
                     "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all cursor-pointer border border-transparent",
                     active
-                      ? "bg-primary/12 text-primary font-medium border-primary/25 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
-                      : "text-muted-foreground hover:text-foreground hover:bg-accent/60 hover:border-border/70"
+                      ? "bg-primary/15 text-primary font-semibold border border-primary/35 shadow-[0_0_12px_rgba(10,203,155,0.08)]"
+                      : "text-muted-foreground/80 hover:text-foreground hover:bg-white/5 hover:border-white/10"
                   )}>
                   <Icon size={16} />
                   {item.label}

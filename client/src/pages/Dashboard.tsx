@@ -86,13 +86,13 @@ export default function Dashboard() {
           eli5Mode && "eli5-active"
         )}>
           <div className="min-w-0 pl-8 sm:pl-0">
-            <div className="theme-kicker mb-0.5">
+            <div className="theme-kicker mb-1.5">
               {eli5Mode ? "Learning Interface" : "// ALIASIST · SIGNAL DECK"}
             </div>
             <h1 className="theme-title text-lg md:text-2xl text-foreground truncate">
               {eli5Mode ? "🎓 Aliasist School" : "Aliasist Pulse Dashboard"}
             </h1>
-            <p className="text-xs md:text-sm text-muted-foreground hidden sm:block">
+            <p className="text-xs md:text-sm text-muted-foreground/80 hidden sm:block" style={{ color: "hsl(158 14% 62%)" }}>
               {eli5Mode
                 ? "Learning Mode Active — we'll explain everything like you're 5!"
                 : "Real-time analytics · Recursive scrub every 15 min"}
@@ -142,11 +142,12 @@ export default function Dashboard() {
 
         <AnalyticsSpikes />
 
-        <div className="flex-1 overflow-y-auto overscroll-contain px-3 md:px-6 py-4 md:py-6 space-y-4 md:space-y-6">
+        <div className="flex-1 overflow-y-auto overscroll-contain px-3 md:px-6 py-5 md:py-8 space-y-6 md:space-y-8">
           {/* Watchlist */}
           <section>
-            <div className="theme-kicker mb-3">
-              {eli5Mode ? "Your Toy Box" : "Watchlist"}
+            <div className="flex items-center gap-3 mb-4">
+              <div className="theme-kicker">{eli5Mode ? "Your Toy Box" : "Watchlist"}</div>
+              <div className="flex-1 h-px" style={{ background: "linear-gradient(90deg, rgba(10,203,155,0.2) 0%, transparent 70%)" }} />
             </div>
             {quotesLoading ? (
               <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
@@ -206,8 +207,9 @@ export default function Dashboard() {
 
           {/* News feed */}
           <section>
-            <div className="theme-kicker mb-3">
-              {eli5Mode ? "Today's Stories" : "Journalism Intelligence (Latest)"}
+            <div className="flex items-center gap-3 mb-4">
+              <div className="theme-kicker">{eli5Mode ? "Today's Stories" : "Journalism Intelligence"}</div>
+              <div className="flex-1 h-px" style={{ background: "linear-gradient(90deg, rgba(10,203,155,0.2) 0%, transparent 70%)" }} />
             </div>
             <NewsFeed compact eli5Mode={eli5Mode} />
           </section>
