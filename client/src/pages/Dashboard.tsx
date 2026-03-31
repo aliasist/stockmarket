@@ -73,6 +73,14 @@ export default function Dashboard() {
       <div className="main-content flex flex-col">
         <TickerTape />
 
+        {/* Aliasist status bar */}
+        <div className="shrink-0 px-4 md:px-6 py-1.5 border-b border-border/40 flex items-center justify-between">
+          <span className="status-badge">systems operational // aliasist pulse</span>
+          <span className="status-badge" style={{ opacity: 0.5 }}>
+            {new Date().toLocaleDateString("en-US", { month: "short", year: "numeric" }).toUpperCase()}
+          </span>
+        </div>
+
         <div className={cn(
           "theme-topbar flex flex-col sm:flex-row sm:items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b border-border gap-3",
           eli5Mode && "eli5-active"

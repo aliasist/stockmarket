@@ -9,48 +9,48 @@
 @layer base {
   :root,
   :root[data-theme="dark"] {
-    --background: 220 18% 7%;
-    --foreground: 150 10% 94%;
+    --background: 158 40% 6%;
+    --foreground: 158 18% 94%;
 
-    --card: 220 18% 10%;
-    --card-foreground: 150 10% 94%;
+    --card: 158 35% 9%;
+    --card-foreground: 158 18% 94%;
 
-    --popover: 220 18% 9%;
-    --popover-foreground: 150 10% 94%;
+    --popover: 158 35% 8%;
+    --popover-foreground: 158 18% 94%;
 
     --primary: 165 90% 42%;
-    --primary-foreground: 220 18% 7%;
+    --primary-foreground: 158 40% 6%;
 
-    --secondary: 220 15% 16%;
-    --secondary-foreground: 150 10% 85%;
+    --secondary: 158 25% 13%;
+    --secondary-foreground: 158 14% 82%;
 
-    --muted: 220 15% 14%;
-    --muted-foreground: 220 12% 55%;
+    --muted: 158 22% 11%;
+    --muted-foreground: 158 12% 45%;
 
     --accent: 165 90% 42%;
-    --accent-foreground: 220 18% 7%;
+    --accent-foreground: 158 40% 6%;
 
     --destructive: 0 84% 60%;
-    --destructive-foreground: 150 10% 94%;
+    --destructive-foreground: 158 18% 94%;
 
-    --border: 220 15% 17%;
-    --input: 220 15% 17%;
+    --border: 165 60% 42% / 0.12;
+    --input: 158 22% 13%;
     --ring: 165 90% 42%;
 
-    --radius: 0.375rem;
+    --radius: 0.25rem;
 
     --font-sans: "Space Grotesk", "Outfit", system-ui, sans-serif;
     --font-mono: "JetBrains Mono", "Space Mono", monospace;
     --font-serif: "Source Serif 4", serif;
 
-    --sidebar: 220 18% 9%;
-    --sidebar-foreground: 150 10% 94%;
-    --sidebar-border: 220 15% 14%;
+    --sidebar: 158 40% 7%;
+    --sidebar-foreground: 158 18% 94%;
+    --sidebar-border: 165 60% 42% / 0.1;
     --sidebar-ring: 165 90% 42%;
     --sidebar-primary: 165 90% 42%;
-    --sidebar-primary-foreground: 220 18% 7%;
-    --sidebar-accent: 220 15% 14%;
-    --sidebar-accent-foreground: 150 10% 94%;
+    --sidebar-primary-foreground: 158 40% 6%;
+    --sidebar-accent: 158 22% 11%;
+    --sidebar-accent-foreground: 158 18% 94%;
 
     --chart-1: 165 90% 42%;
     --chart-2: 155 80% 50%;
@@ -59,25 +59,21 @@
     --chart-5: 196 100% 67%;
 
     --glow-primary: 165 90% 42%;
-    --glow-pink: 312 90% 68%;
-    --glow-cyan: 165 90% 50%;
-    --panel-shadow: 0 24px 80px rgba(4, 8, 14, 0.7);
-    --backdrop-grid: hsl(165 90% 42% / 0.04);
+    --panel-shadow: 0 0 0 1px rgba(10,203,155,0.1), 0 8px 32px rgba(0,0,0,0.5);
+    --backdrop-grid: rgba(10, 203, 155, 0.04);
     --body-gradient:
-      radial-gradient(circle at top left, hsl(165 90% 42% / 0.08), transparent 30%),
-      radial-gradient(circle at top right, hsl(312 90% 68% / 0.06), transparent 25%),
-      radial-gradient(circle at bottom center, hsl(165 90% 42% / 0.05), transparent 25%),
-      linear-gradient(180deg, hsl(220 18% 7%) 0%, hsl(220 18% 6%) 50%, hsl(220 20% 5%) 100%);
-    --topbar-background: linear-gradient(180deg, hsl(220 18% 9% / 0.95), hsl(220 18% 8% / 0.85));
-    --panel-background: linear-gradient(180deg, hsl(220 18% 11% / 0.95), hsl(220 18% 9% / 0.92));
-    --panel-soft-background: linear-gradient(180deg, hsl(220 18% 12% / 0.8), hsl(220 18% 10% / 0.75));
+      radial-gradient(ellipse at top left, rgba(10,203,155,0.07) 0%, transparent 35%),
+      radial-gradient(ellipse at bottom right, rgba(10,203,155,0.04) 0%, transparent 30%),
+      linear-gradient(180deg, hsl(158 40% 6%) 0%, hsl(158 38% 5%) 100%);
+    --topbar-background: hsl(158 40% 7% / 0.96);
+    --panel-background: hsl(158 35% 9% / 0.95);
+    --panel-soft-background: hsl(158 30% 10% / 0.8);
     --logo-ring-background:
-      radial-gradient(circle at 30% 30%, hsl(312 90% 68% / 0.3), transparent 42%),
-      radial-gradient(circle at 70% 70%, hsl(165 90% 42% / 0.2), transparent 44%),
-      linear-gradient(145deg, hsl(220 18% 16%), hsl(220 18% 10%));
+      radial-gradient(circle at 40% 40%, rgba(10,203,155,0.25), transparent 50%),
+      linear-gradient(145deg, hsl(158 35% 14%), hsl(158 35% 8%));
     --shell-overlay:
-      radial-gradient(circle at 18% 12%, hsl(165 90% 42% / 0.08), transparent 20%),
-      radial-gradient(circle at 82% 16%, hsl(165 90% 42% / 0.06), transparent 18%);
+      radial-gradient(ellipse at 15% 10%, rgba(10,203,155,0.06), transparent 25%),
+      radial-gradient(ellipse at 85% 15%, rgba(10,203,155,0.04), transparent 20%);
   }
 
   :root[data-theme="normal"] {
@@ -151,9 +147,10 @@
     content: '';
     position: fixed;
     inset: 0;
-    background-image: 
-      radial-gradient(circle, hsl(165 90% 42% / 0.12) 1px, transparent 1px);
-    background-size: 32px 32px;
+    background-image:
+      linear-gradient(rgba(10, 203, 155, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(10, 203, 155, 0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
     pointer-events: none;
     z-index: 0;
   }
@@ -204,8 +201,12 @@
 
 .theme-panel {
   background: var(--panel-background);
-  border: 1px solid hsl(var(--border) / 0.85);
+  border: 1px solid rgba(10, 203, 155, 0.12);
   box-shadow: var(--panel-shadow);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.theme-panel:hover {
+  border-color: rgba(10, 203, 155, 0.22);
 }
 
 .theme-panel-soft {
@@ -224,6 +225,23 @@
   font-size: 0.625rem;
   color: hsl(var(--primary));
   opacity: 0.85;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: hsl(var(--primary));
+  opacity: 0.8;
+}
+.status-badge::before {
+  content: '\25A0';
+  font-size: 0.5rem;
+  color: hsl(var(--primary));
 }
 
 .theme-title {
@@ -397,13 +415,7 @@
   100% { transform: translateY(0); opacity: 1; }
 }
 
-/* ── Design Polish: Enhanced Theme Panel Hover ────────────────────────────── */
-.theme-panel {
-  transition: box-shadow 0.2s ease, border-color 0.2s ease;
-}
-.theme-panel:hover {
-  border-color: hsl(var(--border) / 0.8);
-}
+/* ── Design Polish: Enhanced Theme Panel Hover — merged into .theme-panel above ── */
 
 /* ── Design Polish: Shimmer Loading Animation ─────────────────────────────── */
 @layer utilities {

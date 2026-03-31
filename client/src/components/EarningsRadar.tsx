@@ -207,8 +207,10 @@ export default function EarningsRadar({ ticker }: Props) {
 
       {/* Error state */}
       {isError && (
-        <div className="rounded-xl border border-rose-500/30 bg-rose-500/5 p-4 text-center">
-          <p className="text-sm text-rose-400">Data unavailable — check your FMP API key.</p>
+        <div className="flex flex-col items-center justify-center py-8 text-center gap-2">
+          <div className="text-[10px] font-mono uppercase tracking-widest text-primary/40">// no data</div>
+          <div className="text-xs text-muted-foreground">FMP data unavailable</div>
+          <div className="text-[10px] text-muted-foreground/50">Add FMP_API_KEY to enable earnings history</div>
         </div>
       )}
 

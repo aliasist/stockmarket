@@ -89,10 +89,15 @@ export default function NewsFeed({ compact = false, eli5Mode = false }: { compac
             ))}
           </div>
         ) : displayed.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground text-sm">
-            {articles.length === 0
-              ? "Scanning news sources... First scrub is running."
-              : "No articles match this filter."}
+          <div className="flex flex-col items-center justify-center py-10 text-center gap-2">
+            {articles.length === 0 ? (
+              <>
+                <div className="text-[10px] font-mono uppercase tracking-widest text-primary/50">// scanning sources</div>
+                <div className="text-xs text-muted-foreground/60">No articles yet — trigger a scrub from the dashboard to begin intelligence collection.</div>
+              </>
+            ) : (
+              <div className="text-xs text-muted-foreground/60">No articles match this filter.</div>
+            )}
           </div>
         ) : (
           <div className="divide-y divide-border/50">
