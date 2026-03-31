@@ -15,9 +15,7 @@ export function AnalyticsSpikes() {
     queryKey: ["/api/analytics"],
   });
 
-  if (isLoading) return <div className="skeleton h-24 rounded-lg">Loading spikes…</div>;
-  if (error) return <div className="text-red-500">Error loading analytics data.</div>;
-  if (!data?.spikes?.length) return <div className="text-muted-foreground">No spikes detected.</div>;
+  if (isLoading || error || !data?.spikes?.length) return null;
 
   return (
     <div className="bg-card p-4 rounded-xl shadow">

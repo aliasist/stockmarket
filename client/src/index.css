@@ -167,6 +167,16 @@
   height: 100dvh;
 }
 
+/* Mobile: full width, sidebar hidden (hamburger used instead) */
+@media (max-width: 767px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+  .dashboard-grid > aside {
+    display: none;
+  }
+}
+
 .main-content {
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -299,13 +309,7 @@
 
 @media (max-width: 1024px) {
   .dashboard-grid {
-    grid-template-columns: 88px 1fr;
-  }
-}
-
-@media (max-width: 768px) {
-  .dashboard-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 200px 1fr;
   }
 }
 

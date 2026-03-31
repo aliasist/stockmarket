@@ -74,28 +74,23 @@ export default function Dashboard() {
         <TickerTape />
 
         <div className={cn(
-          "theme-topbar flex items-center justify-between px-6 py-4 border-b border-border",
+          "theme-topbar flex flex-col sm:flex-row sm:items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b border-border gap-3",
           eli5Mode && "eli5-active"
         )}>
-          <div>
-            <div className="theme-kicker mb-1">
+          <div className="min-w-0 pl-8 sm:pl-0">
+            <div className="theme-kicker mb-0.5">
               {eli5Mode ? "Learning Interface" : "// ALIASIST · SIGNAL DECK"}
             </div>
-            <h1 className="theme-title text-2xl text-foreground">
-              {eli5Mode ? "🎓 Aliasist School Dashboard" : "Aliasist Pulse Dashboard"}
+            <h1 className="theme-title text-lg md:text-2xl text-foreground truncate">
+              {eli5Mode ? "🎓 Aliasist School" : "Aliasist Pulse Dashboard"}
             </h1>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs md:text-sm text-muted-foreground hidden sm:block">
               {eli5Mode
                 ? "Learning Mode Active — we'll explain everything like you're 5!"
                 : "Real-time analytics · Recursive scrub every 15 min"}
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            {h && !h.aiConfigured && (
-              <div className="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2 py-1 rounded-md">
-                Enable Workers AI for AI features
-              </div>
-            )}
+          <div className="flex items-center gap-2 shrink-0">
             {/* Ticker search */}
             <form
               onSubmit={(e) => {
@@ -103,20 +98,18 @@ export default function Dashboard() {
                 const val = (e.currentTarget.elements.namedItem("ticker") as HTMLInputElement)?.value?.trim().toUpperCase();
                 if (val) setSelectedTicker(val);
               }}
-              className="flex items-center gap-2"
+              className="flex items-center gap-1.5"
             >
-              <div className="relative">
-                <input
-                  name="ticker"
-                  defaultValue={selectedTicker}
-                  placeholder="Enter ticker..."
-                  className="w-36 pl-3 pr-3 py-1.5 text-xs font-mono bg-muted/40 border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary/60 text-foreground placeholder:text-muted-foreground uppercase tracking-wider"
-                  style={{ letterSpacing: "0.1em" }}
-                />
-              </div>
+              <input
+                name="ticker"
+                defaultValue={selectedTicker}
+                placeholder="Ticker..."
+                className="w-20 sm:w-32 pl-2.5 pr-2 py-1.5 text-xs font-mono bg-muted/40 border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary/60 text-foreground placeholder:text-muted-foreground uppercase tracking-wider"
+                style={{ letterSpacing: "0.1em" }}
+              />
               <button
                 type="submit"
-                className="px-3 py-1.5 text-xs font-mono bg-primary/15 text-primary border border-primary/30 rounded-md hover:bg-primary/25 transition-all"
+                className="px-2.5 py-1.5 text-xs font-mono bg-primary/15 text-primary border border-primary/30 rounded-md hover:bg-primary/25 transition-all"
               >
                 LOAD
               </button>
@@ -127,23 +120,21 @@ export default function Dashboard() {
               variant="outline"
               onClick={() => triggerScrub.mutate()}
               disabled={triggerScrub.isPending}
-              className="text-xs gap-1.5 border-primary/30 bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary"
+              className="text-xs gap-1 border-primary/30 bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary px-2.5"
             >
               {triggerScrub.isPending ? (
                 <RefreshCw size={12} className="animate-spin" />
               ) : (
                 <Zap size={12} />
               )}
-              Run Scrub
+              <span className="hidden sm:inline">Run Scrub</span>
             </Button>
           </div>
         </div>
 
-        <div className="mt-8">
-          <AnalyticsSpikes />
-        </div>
+        <AnalyticsSpikes />
 
-        <div className="flex-1 overflow-y-auto overscroll-contain p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto overscroll-contain px-3 md:px-6 py-4 md:py-6 space-y-4 md:space-y-6">
           {/* Watchlist */}
           <section>
             <div className="theme-kicker mb-3">
