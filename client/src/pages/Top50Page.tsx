@@ -10,6 +10,7 @@ import Sidebar from "../components/Sidebar";
 import CompanyDetail from "../components/Top50/CompanyDetail";
 import ComparePanel from "../components/Top50/ComparePanel";
 import { Search, BarChart3, TrendingUp, Globe } from "lucide-react";
+import { track } from "@/lib/track";
 import { cn } from "@/lib/utils";
 
 const formatMarketCap = (v: number) => {
@@ -144,14 +145,14 @@ export default function Top50Page() {
                         active={selectedTicker === co.ticker}
                         onClick={() => {
                           setCompareMode(false);
-                          setSelectedTicker(co.ticker);
+                          setSelectedTicker(co.ticker); void track("company_viewed", co.ticker);
                         }}
                       />
                     ) : (
                       <CompanyCard
                         key={co.ticker}
                         co={co}
-                        onClick={() => setSelectedTicker(co.ticker)}
+                        onClick={() => { setSelectedTicker(co.ticker); void track("company_viewed", co.ticker); }}
                       />
                     )
                   )}
@@ -182,6 +183,23 @@ export default function Top50Page() {
         </div>
       </div>
     </div>
+  );
+}
+
+/* ── Portrait background component ──────────────────────────────────── */
+function PortraitBg({ ticker }: { ticker: string }) {
+  return (
+    <div
+      style={{
+        position: 'absolute', inset: 0,
+        backgroundImage: `url('/portraits/${ticker}.png')`,
+        backgroundSize: 'cover', backgroundPosition: 'center',
+        opacity: 0.12,
+        borderRadius: 'inherit',
+        pointerEvents: 'none',
+      }}
+      onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
+    />
   );
 }
 
@@ -247,6 +265,9 @@ function CompanyCard({ co, onClick }: { co: Company; onClick: () => void }) {
       onClick={onClick}
       className="group p-4 text-left border-b border-r border-border/30 hover:bg-accent/30 transition-all cursor-pointer relative overflow-hidden"
     >
+      {/* Portrait card background */}
+      <PortraitBg ticker={co.ticker} />
+
       {/* Rank badge */}
       <div
         className="absolute top-0 left-0 w-1 h-full"

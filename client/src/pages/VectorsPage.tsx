@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useAlertSound } from "../hooks/useAlertSound";
 import Sidebar from "../components/Sidebar";
 import TickerTape from "../components/TickerTape";
 import { TrendingUp, TrendingDown, Minus, Clock, Database } from "lucide-react";
@@ -29,11 +30,27 @@ interface ScrubRun {
 
 export default function VectorsPage() {
   const [eli5Mode, setEli5Mode] = useState(false);
+  const { play } = useAlertSound();
+  const isFirstLoad = useRef(true);
 
   const { data: vectors = [], isLoading: vecLoading } = useQuery<MarketVector[]>({
     queryKey: ["/api/vectors"],
     refetchInterval: 30000,
   });
+
+  // Play alert sound when new vectors arrive
+  useEffect(() => {
+    // Skip on initial mount (don't play on page load)
+    if (isFirstLoad.current) {
+      isFirstLoad.current = false;
+      return;
+    }
+    if (vectors.length === 0) return;
+    const bullish = vectors.filter((v) => v.signal === 'bullish').length;
+    const bearish = vectors.filter((v) => v.signal === 'bearish').length;
+    const dominant = bullish > bearish ? 'bullish' : bearish > bullish ? 'bearish' : 'neutral';
+    play(dominant);
+  }, [vectors, play]);
 
   const { data: runs = [] } = useQuery<ScrubRun[]>({
     queryKey: ["/api/scrub/runs"],

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { Search, Loader2, FileText, Clock, ChevronRight, Sparkles, X } from "lucide-react";
+import { Search, Loader2, FileText, Clock, ChevronRight, Sparkles, X, Share2 } from "lucide-react";
+import { track } from "@/lib/track";
 import { cn } from "@/lib/utils";
 import Sidebar from "../components/Sidebar";
 import PitchMemo, { type PitchData, type AiSections } from "../components/PitchMemo";
@@ -155,12 +156,44 @@ export default function PitchPage() {
   const [history, setHistory] = useState<PitchData[]>(loadHistory);
   const [error, setError] = useState<string | null>(null);
   const [visible, setVisible] = useState(false);
+  const [saveSlug, setSaveSlug] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const savePitch = async (pitch: PitchData) => {
+    setSaving(true);
+    setSaveSlug(null);
+    try {
+      const token = localStorage.getItem("aliasist-token");
+      const res = await fetch("./api/pitches/save", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          ticker: pitch.ticker,
+          company_name: pitch.companyName,
+          memo_json: JSON.stringify(pitch),
+          is_public: true,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json() as { slug: string; share_url: string };
+        setSaveSlug(data.slug);
+      }
+    } catch {
+      // silent
+    } finally {
+      setSaving(false);
+    }
+  };
 
   // Fade in when pitch appears
   useEffect(() => {
     if (currentPitch) {
       setVisible(false);
+      setSaveSlug(null);
       requestAnimationFrame(() => {
         setTimeout(() => setVisible(true), 30);
       });
@@ -376,6 +409,7 @@ Return a JSON object with these exact keys:
         aiSections,
       };
 
+      void track("pitch_generated", symbol);
       setCurrentPitch(newPitch);
 
       // Save to history
@@ -586,6 +620,41 @@ Return a JSON object with these exact keys:
                 )}
               >
                 <PitchMemo data={currentPitch} onPrint={() => window.print()} />
+
+                {/* Save & Share */}
+                <div className="mt-4 flex items-center gap-3 print-hide">
+                  <button
+                    onClick={() => void savePitch(currentPitch)}
+                    disabled={saving}
+                    className={cn(
+                      "flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all border",
+                      "border-[#0acb9b]/40 text-[#0acb9b] bg-[#0acb9b]/10",
+                      "hover:bg-[#0acb9b]/20 hover:border-[#0acb9b]/60",
+                      "disabled:opacity-50 disabled:cursor-not-allowed"
+                    )}
+                  >
+                    {saving ? (
+                      <Loader2 size={14} className="animate-spin" />
+                    ) : (
+                      <Share2 size={14} />
+                    )}
+                    {saving ? "Saving..." : "Save & Share"}
+                  </button>
+
+                  {saveSlug && (
+                    <div className="flex items-center gap-2 bg-[#0acb9b]/10 border border-[#0acb9b]/20 rounded-xl px-3 py-2 text-xs">
+                      <span className="text-muted-foreground">Share link:</span>
+                      <a
+                        href={`https://pulse.aliasist.com/#/pitch/share/${saveSlug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[#0acb9b] font-mono hover:underline"
+                      >
+                        pulse.aliasist.com/#/pitch/share/{saveSlug}
+                      </a>
+                    </div>
+                  )}
+                </div>
               </div>
             ) : (
               <EmptyState />

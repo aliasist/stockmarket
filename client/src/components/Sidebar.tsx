@@ -3,13 +3,15 @@ import { Link } from "wouter";
 import { useHashLocation } from "wouter/use-hash-location";
 import {
   LayoutDashboard, Newspaper, TrendingUp, Settings,
-  Zap, Brain, Moon, SunMedium, MessageSquare, Globe2, FileText, Menu, X
+  Zap, Brain, Moon, SunMedium, MessageSquare, Globe2, FileText, Menu, X, LogOut, UserCircle2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import Logo from "@/components/ui/logo";
 import { useTheme } from "./theme-provider";
+import AuthModal from "./AuthModal";
+import { useAuth } from "@/hooks/useAuth";
 
 interface ScrubRun {
   id: number;
@@ -32,6 +34,8 @@ export default function Sidebar({ eli5Mode, onToggleEli5 }: { eli5Mode: boolean;
   const [loc] = useHashLocation();
   const { theme, toggleTheme } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
+  const { user, logout } = useAuth();
   const { data: latestRun } = useQuery<ScrubRun>({
     queryKey: ["/api/scrub/latest"],
     refetchInterval: 30000,
@@ -95,6 +99,43 @@ export default function Sidebar({ eli5Mode, onToggleEli5 }: { eli5Mode: boolean;
             );
           })}
         </nav>
+        {/* User Menu */}
+        <div className="p-3 border-t border-border">
+          {user ? (
+            <div className="flex items-center gap-3 px-2 py-2 rounded-xl bg-white/5 border border-white/8">
+              <div
+                className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-black shrink-0"
+                style={{ background: "#0acb9b" }}
+              >
+                {(user.display_name ?? user.handle).slice(0, 1).toUpperCase()}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-sm font-semibold text-foreground leading-tight truncate">
+                  {user.display_name ?? `@${user.handle}`}
+                </div>
+                <div className="text-[10px] text-muted-foreground/70 truncate">{user.email}</div>
+              </div>
+              <button
+                onClick={() => void logout()}
+                title="Sign out"
+                className="text-muted-foreground hover:text-rose-400 transition-colors p-1 shrink-0"
+              >
+                <LogOut size={14} />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setAuthOpen(true)}
+              className={cn(
+                "w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all border",
+                "border-[#0acb9b]/30 text-[#0acb9b] hover:bg-[#0acb9b]/10 hover:border-[#0acb9b]/50"
+              )}
+            >
+              <UserCircle2 size={16} />
+              Sign In
+            </button>
+          )}
+        </div>
         <div className="p-3 border-t border-border space-y-2">
           <button
             onClick={toggleTheme}
@@ -158,6 +199,7 @@ export default function Sidebar({ eli5Mode, onToggleEli5 }: { eli5Mode: boolean;
           </aside>
         </div>
       )}
+      <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
     </>
   );
 }

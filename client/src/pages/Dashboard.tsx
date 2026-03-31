@@ -19,6 +19,8 @@ import NvdaRadarChart from "../components/NvdaRadarChart";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { track } from "@/lib/track";
+import { getMarketState, getMarketBg } from "@/lib/marketState";
 
 interface Quote {
   ticker: string;
@@ -29,6 +31,15 @@ interface Quote {
   volume: number;
   open: number;
   previousClose: number;
+}
+
+interface MarketVector {
+  id: number;
+  signal: string;
+  confidence: number;
+  reasoning: string;
+  sources: string;
+  createdAt: string;
 }
 
 interface ScrubRun {
@@ -47,6 +58,13 @@ export default function Dashboard() {
   const { data: quotes = [], isLoading: quotesLoading } = useQuery<Quote[]>({
     queryKey: ["/api/quotes"],
   });
+
+  const { data: vectors = [] } = useQuery<MarketVector[]>({
+    queryKey: ["/api/vectors"],
+    refetchInterval: 60000,
+  });
+
+  const marketState = getMarketState(vectors);
 
   const { data: health } = useQuery({
     queryKey: ["/api/health"],
@@ -68,6 +86,16 @@ export default function Dashboard() {
 
   return (
     <div className="dashboard-grid app-shell">
+      {/* Market state full-bleed background */}
+      <div style={{
+        position: 'fixed', inset: 0, zIndex: -1,
+        backgroundImage: `url('${getMarketBg(marketState)}')`,
+        backgroundSize: 'cover', backgroundPosition: 'center',
+        opacity: 0.04,
+        transition: 'background-image 2s ease, opacity 1s ease',
+        filter: 'saturate(1.5)',
+        pointerEvents: 'none',
+      }} />
       <Sidebar eli5Mode={eli5Mode} onToggleEli5={() => setEli5Mode(!eli5Mode)} />
 
       <div className="main-content flex flex-col">
@@ -168,7 +196,7 @@ export default function Dashboard() {
                     key={q.ticker}
                     quote={q}
                     active={selectedTicker === q.ticker}
-                    onClick={() => setSelectedTicker(q.ticker)}
+                    onClick={() => { setSelectedTicker(q.ticker); void track("ticker_selected", q.ticker); }}
                     eli5Mode={eli5Mode}
                   />
                 ))}

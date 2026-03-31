@@ -1,7 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 export default function SplashScreen({ onDone }: { onDone: () => void }) {
   const [phase, setPhase] = useState<"in" | "hold" | "out">("in");
+  const [muted, setMuted] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     const t1 = setTimeout(() => setPhase("hold"), 400);
@@ -9,6 +11,23 @@ export default function SplashScreen({ onDone }: { onDone: () => void }) {
     const t3 = setTimeout(() => onDone(), 2400);
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
   }, [onDone]);
+
+  // Play startup sound during the "hold" phase (after UFO appears)
+  useEffect(() => {
+    if (phase === "hold") {
+      const audio = new Audio('/audio/startup.mp3');
+      audio.volume = muted ? 0 : 0.4;
+      audio.play().catch(() => {});
+      audioRef.current = audio;
+    }
+  }, [phase]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Sync mute state to audio element if already playing
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = muted ? 0 : 0.4;
+    }
+  }, [muted]);
 
   return (
     <div
@@ -132,6 +151,41 @@ export default function SplashScreen({ onDone }: { onDone: () => void }) {
           boxShadow: "0 0 8px hsl(165, 90%, 42%)",
         }} />
       </div>
+
+      {/* Mute/unmute toggle — bottom-right corner */}
+      <button
+        onClick={() => setMuted((m) => !m)}
+        aria-label={muted ? "Unmute startup sound" : "Mute startup sound"}
+        style={{
+          position: "absolute",
+          bottom: 20,
+          right: 20,
+          zIndex: 10,
+          background: "none",
+          border: "none",
+          cursor: "pointer",
+          padding: 4,
+          color: "hsl(165, 90%, 42%)",
+          opacity: 0.75,
+          lineHeight: 1,
+        }}
+      >
+        {muted ? (
+          /* Speaker muted icon */
+          <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+            <line x1="23" y1="9" x2="17" y2="15" />
+            <line x1="17" y1="9" x2="23" y2="15" />
+          </svg>
+        ) : (
+          /* Speaker on icon */
+          <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+          </svg>
+        )}
+      </button>
 
       <style>{`
         @keyframes floatUfo {

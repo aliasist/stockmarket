@@ -15,7 +15,7 @@ import {
 } from "./ai.js"
 import { getChart, getQuotes } from "./marketData.js"
 import { runScrub } from "./scrub.js"
-import { ensureSchema, storage } from "./storage.js"
+import { ensureSchema, storage, ensureAuthSchema, authStorage, getAuthUser, safeUser } from "./storage.js"
 import type { Env } from "./types.js"
 
 type PredictionCacheEntry = {
@@ -78,26 +78,8 @@ async function serveAsset(request: Request, env: Env): Promise<Response> {
 }
 
 async function handleApi(request: Request, env: Env): Promise<Response> {
-    if (request.url.includes("/api/analytics")) {
-      // Example: Find spikes in analytics_data (assumes a 'value' and 'timestamp' field)
-      // This is a simple example; adjust the query as needed for your schema
-      try {
-        // Find rows where value is a spike (e.g., > 2x the previous value)
-        // This assumes your dataset supports SQL-like queries
-        const result = await env.ANALYTICS_ENGINE.query(`
-          SELECT *,
-            LAG(value) OVER (ORDER BY timestamp) AS prev_value
-          FROM analytics_data
-          QUALIFY value > 2 * prev_value
-          ORDER BY timestamp DESC
-          LIMIT 20
-        `)
-        return json({ spikes: result });
-      } catch (err) {
-        return json({ error: 'Failed to query analytics data', details: String(err) }, { status: 500 });
-      }
-    }
   await ensureSchema(env)
+  await ensureAuthSchema(env)
 
   const url = new URL(request.url)
   const { pathname } = url
@@ -271,6 +253,150 @@ async function handleApi(request: Request, env: Env): Promise<Response> {
     if (resource === "income") return json(await getFmpIncome(env, ticker))
     if (resource === "balance") return json(await getFmpBalance(env, ticker))
     return notFound()
+  }
+
+
+  // ── Auth routes ──────────────────────────────────────────────────────────────
+  if (pathname === "/api/auth/register" && request.method === "POST") {
+    try {
+      const body = await request.json() as { email?: string; handle?: string; password?: string }
+      if (!body.email || !body.handle || !body.password) {
+        return json({ error: "email, handle, and password are required" }, { status: 400 })
+      }
+      const { user, token } = await authStorage.register(env, body.email, body.handle, body.password)
+      return json({ token, user: safeUser(user) })
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      if (msg.includes("UNIQUE") || msg.includes("unique")) {
+        return json({ error: "Email or handle already taken" }, { status: 409 })
+      }
+      return json({ error: msg }, { status: 500 })
+    }
+  }
+
+  if (pathname === "/api/auth/login" && request.method === "POST") {
+    try {
+      const body = await request.json() as { email?: string; password?: string }
+      if (!body.email || !body.password) {
+        return json({ error: "email and password are required" }, { status: 400 })
+      }
+      const result = await authStorage.login(env, body.email, body.password)
+      if (!result) return json({ error: "Invalid credentials" }, { status: 401 })
+      return json({ token: result.token, user: safeUser(result.user) })
+    } catch (err) {
+      return json({ error: String(err) }, { status: 500 })
+    }
+  }
+
+  if (pathname === "/api/auth/logout" && request.method === "POST") {
+    const authHeader = request.headers.get("Authorization")
+    if (authHeader?.startsWith("Bearer ")) {
+      await authStorage.logout(env, authHeader.slice(7))
+    }
+    return json({ ok: true })
+  }
+
+  if (pathname === "/api/auth/me") {
+    const user = await getAuthUser(request, env)
+    if (!user) return json({ error: "Unauthorized" }, { status: 401 })
+    return json({ user: safeUser(user) })
+  }
+
+  // ── Event logging ─────────────────────────────────────────────────────────────
+  if (pathname === "/api/events" && request.method === "POST") {
+    try {
+      const body = await request.json() as { event_type?: string; ticker?: string; metadata?: Record<string, unknown> }
+      if (!body.event_type) return json({ error: "event_type required" }, { status: 400 })
+      const user = await getAuthUser(request, env)
+      const authHeader = request.headers.get("Authorization")
+      const sessionToken = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null
+      await authStorage.logEvent(env, {
+        user_id: user?.id ?? null,
+        session_token: sessionToken,
+        event_type: body.event_type,
+        ticker: body.ticker ?? null,
+        metadata: body.metadata ? JSON.stringify(body.metadata) : null,
+        ip: request.headers.get("CF-Connecting-IP") ?? null,
+        user_agent: request.headers.get("User-Agent") ?? null,
+      })
+      return json({ ok: true })
+    } catch (err) {
+      return json({ error: String(err) }, { status: 500 })
+    }
+  }
+
+  if (pathname === "/api/analytics/top-tickers") {
+    try {
+      const rows = await authStorage.getTopTickers(env, 7)
+      return json({ tickers: rows })
+    } catch (err) {
+      return json({ error: String(err) }, { status: 500 })
+    }
+  }
+
+  if (pathname === "/api/analytics/activity") {
+    try {
+      const rows = await authStorage.getActivityCounts(env, 7)
+      return json({ activity: rows })
+    } catch (err) {
+      return json({ error: String(err) }, { status: 500 })
+    }
+  }
+
+  // ── Pitch persistence ─────────────────────────────────────────────────────────
+  if (pathname === "/api/pitches/save" && request.method === "POST") {
+    try {
+      const body = await request.json() as {
+        ticker?: string
+        company_name?: string
+        memo_json?: string
+        is_public?: boolean
+      }
+      if (!body.ticker || !body.company_name || !body.memo_json) {
+        return json({ error: "ticker, company_name, and memo_json are required" }, { status: 400 })
+      }
+      const user = await getAuthUser(request, env)
+      const saved = await authStorage.savePitch(env, {
+        user_id: user?.id ?? null,
+        ticker: body.ticker,
+        company_name: body.company_name,
+        memo_json: body.memo_json,
+        is_public: body.is_public ? 1 : 0,
+      })
+      // Update pitch_count in ticker_interest
+      const today = new Date().toISOString().slice(0, 10)
+      await env.DB.prepare(
+        `INSERT INTO ticker_interest (ticker, date, pitch_count) VALUES (?, ?, 1)
+         ON CONFLICT(ticker, date) DO UPDATE SET pitch_count = pitch_count + 1`
+      ).bind(body.ticker.toUpperCase(), today).run()
+      return json({
+        ok: true,
+        slug: saved.share_slug,
+        share_url: `https://pulse.aliasist.com/#/pitch/share/${saved.share_slug}`,
+      })
+    } catch (err) {
+      return json({ error: String(err) }, { status: 500 })
+    }
+  }
+
+  if (pathname === "/api/pitches/my") {
+    const user = await getAuthUser(request, env)
+    if (!user) return json({ error: "Unauthorized" }, { status: 401 })
+    const pitches = await authStorage.getMyPitches(env, user.id)
+    return json({ pitches })
+  }
+
+  if (pathname === "/api/pitches/public") {
+    const pitches = await authStorage.getPublicPitches(env)
+    return json({ pitches })
+  }
+
+  if (pathname.startsWith("/api/pitches/") && !pathname.includes("/my") && !pathname.includes("/public") && !pathname.includes("/save")) {
+    const slug = pathname.slice("/api/pitches/".length)
+    if (!slug) return notFound()
+    const pitch = await authStorage.getPitchBySlug(env, slug)
+    if (!pitch) return notFound()
+    return json({ pitch })
   }
 
   return notFound()

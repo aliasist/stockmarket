@@ -6,6 +6,7 @@ import EarningsRadar from "../components/EarningsRadar";
 import DCFCalculator from "../components/DCFCalculator";
 import { cn } from "@/lib/utils";
 import { Search, TrendingUp } from "lucide-react";
+import { track } from "@/lib/track";
 
 type RightTab = "earnings" | "dcf";
 
@@ -18,7 +19,10 @@ export default function ResearchPage() {
   function handleTickerSubmit(e: React.FormEvent) {
     e.preventDefault();
     const t = inputValue.trim().toUpperCase();
-    if (t) setTicker(t);
+    if (t) {
+      setTicker(t);
+      void track("research_query", t);
+    }
   }
 
   return (
