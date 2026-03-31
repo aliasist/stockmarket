@@ -1,4 +1,5 @@
 import { Suspense, lazy, useState } from "react";
+import ErrorBoundary from "./components/ErrorBoundary";
 import { Switch, Route, Router } from "wouter";
 import { useHashLocation } from "wouter/use-hash-location";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -45,7 +46,11 @@ export default function App() {
               <Route path="/research" component={ResearchPage} />
               <Route path="/settings" component={SettingsPage} />
               <Route path="/top50" component={Top50Page} />
-              <Route path="/pitch" component={PitchPage} />
+              <Route path="/pitch">
+                <ErrorBoundary label="Pitch Builder">
+                  <PitchPage />
+                </ErrorBoundary>
+              </Route>
               <Route component={NotFound} />
             </Switch>
           </Suspense>
