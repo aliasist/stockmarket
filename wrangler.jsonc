@@ -16,12 +16,22 @@
       "database_name": "market-pulse",
       "database_id": "779373eb-b2f2-4c01-a00a-35bff1e9afe8",
       "migrations_dir": "./migrations"
+    },
+    {
+      "binding": "ANALYTICS",
+      "database_name": "aliasist-analytics",
+      "database_id": "76035036-4ee2-45ba-865d-ab2c18089cfc"
     }
   ],
   "analytics_engine_datasets": [
-    { "binding": "ANALYTICS_ENGINE", "dataset": "analytics_data" }
+    {
+      "binding": "ANALYTICS_ENGINE",
+      "dataset": "analytics_data"
+    }
   ],
   "triggers": {
-    "crons": ["*/15 * * * *"]
+    "crons": [
+      "*/15 * * * *"
+    ]
   }
 }

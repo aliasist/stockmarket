@@ -1,5 +1,6 @@
 export interface Env {
   DB: D1Database
+  ANALYTICS: D1Database
   AI: {
     run(model: string, inputs: Record<string, unknown>): Promise<any>
   }

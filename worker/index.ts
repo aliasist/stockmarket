@@ -17,6 +17,7 @@ import { getChart, getQuotes } from "./marketData.js"
 import { runScrub } from "./scrub.js"
 import { ensureSchema, storage, ensureAuthSchema, authStorage, getAuthUser, safeUser } from "./storage.js"
 import type { Env } from "./types.js"
+import { logChat, logUsage } from "./analytics.js"
 
 type PredictionCacheEntry = {
   expiresAt: number
@@ -100,6 +101,9 @@ async function handleApi(request: Request, env: Env): Promise<Response> {
   if (pathname === "/api/quotes") {
     const watchlist = await storage.getWatchlist(env)
     const quotes = await getQuotes(watchlist.map((item) => item.ticker))
+    if (env.ANALYTICS) {
+      logUsage(env.ANALYTICS, "stockmarket", "quotes", "fetch", undefined, { count: quotes.length }).catch(() => {})
+    }
     return json(quotes)
   }
 
@@ -182,12 +186,18 @@ async function handleApi(request: Request, env: Env): Promise<Response> {
       addedAt: new Date().toISOString(),
     })
 
+    if (env.ANALYTICS) {
+      logUsage(env.ANALYTICS, "stockmarket", "watchlist", "add", parsed.data.ticker.toUpperCase(), { name: parsed.data.name }).catch(() => {})
+    }
     return json(item)
   }
 
   if (pathname.startsWith("/api/watchlist/") && request.method === "DELETE") {
     const ticker = decodeURIComponent(pathname.slice("/api/watchlist/".length)).toUpperCase()
     await storage.removeFromWatchlist(env, ticker)
+    if (env.ANALYTICS) {
+      logUsage(env.ANALYTICS, "stockmarket", "watchlist", "remove", ticker).catch(() => {})
+    }
     return new Response(null, { status: 204 })
   }
 
@@ -202,6 +212,9 @@ async function handleApi(request: Request, env: Env): Promise<Response> {
   if (pathname === "/api/scrub/trigger" && request.method === "POST") {
     predictionCache.clear()
     await runScrub(env)
+    if (env.ANALYTICS) {
+      logUsage(env.ANALYTICS, "stockmarket", "scrub", "trigger").catch(() => {})
+    }
     return json({ message: "Scrub triggered" })
   }
 
@@ -221,6 +234,11 @@ async function handleApi(request: Request, env: Env): Promise<Response> {
       .map((m) => ({ role: (m.role === "assistant" ? "assistant" : m.role === "system" ? "system" : "user") as "system" | "user" | "assistant", content: m.content }))
     const reply = await callGroq(env, normalized, body.model ?? "llama-3.3-70b-versatile", 2048)
     if (!reply) return json({ error: "Groq request failed", reply: null }, { status: 502 })
+    // Log chat to analytics
+    const userMsg = normalized.filter(m => m.role === "user").map(m => m.content).join(" ") || ""
+    if (env.ANALYTICS) {
+      logChat(env.ANALYTICS, "stockmarket", userMsg, reply, body.model ?? "llama-3.3-70b-versatile").catch(() => {})
+    }
     return json({ reply })
   }
 
