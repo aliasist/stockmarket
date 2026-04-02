@@ -18,6 +18,7 @@ import { runScrub } from "./scrub.js"
 import { ensureSchema, storage, ensureAuthSchema, authStorage, getAuthUser, safeUser } from "./storage.js"
 import type { Env } from "./types.js"
 import { logChat, logUsage } from "./analytics.js"
+import { withDatadog, sendMetrics, sendLog } from "./datadog.js"
 
 type PredictionCacheEntry = {
   expiresAt: number
@@ -434,26 +435,29 @@ export default {
 
     try {
       if (url.pathname.startsWith("/api/")) {
-        return await handleApi(request, env)
+        return await withDatadog(env.DD_API_KEY, url.pathname, request.method, () =>
+          handleApi(request, env)
+        )
       }
 
       return await serveAsset(request, env)
     } catch (error) {
-      return json(
-        {
-          message:
-            error && typeof error === "object" && "message" in error
-              ? String((error as Error).message)
-              : "Internal Server Error",
-        },
-        { status: 500 }
-      )
+      const errMsg =
+        error && typeof error === "object" && "message" in error
+          ? String((error as Error).message)
+          : "Internal Server Error"
+      sendLog(env.DD_API_KEY, "error", `Unhandled Worker error: ${errMsg}`, {
+        pathname: url.pathname,
+        method: request.method,
+      })
+      return json({ message: errMsg }, { status: 500 })
     }
   },
 
   async scheduled(_controller: ScheduledController, env: Env): Promise<void> {
     predictionCache.clear()
     await ensureSchema(env)
+    sendMetrics(env.DD_API_KEY, [{ metric: "aliasist.cron.scrub", value: 1, tags: ["trigger:scheduled"] }])
     await runScrub(env)
   },
 }

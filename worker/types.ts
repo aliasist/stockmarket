@@ -12,6 +12,7 @@ export interface Env {
   GROQ_API_KEY?: string
   GEMINI_API_KEY?: string
   FMP_API_KEY?: string
+  DD_API_KEY?: string
 }
 
 export interface AnalyticsEngineDataset {
