@@ -9,6 +9,7 @@ import axios from "axios";
 const CF_ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID || "";
 const CF_API_TOKEN = process.env.CLOUDFLARE_API_TOKEN || "";
 const CF_DB_ID = process.env.CLOUDFLARE_D1_DB_ID || "";
+const CF_ANALYTICS_DB_ID = process.env.CLOUDFLARE_D1_ANALYTICS_DB_ID || "";
 
 const cfHeaders = {
   Authorization: `Bearer ${CF_API_TOKEN}`,
@@ -152,3 +153,25 @@ export const cloudflareAvailable = (): boolean =>
 
 export const d1Available = (): boolean =>
   !!(CF_ACCOUNT_ID && CF_API_TOKEN && CF_DB_ID);
+
+export const d1AnalyticsAvailable = (): boolean =>
+  !!(CF_ACCOUNT_ID && CF_API_TOKEN && CF_ANALYTICS_DB_ID);
+
+// ── D1 Analytics Database ─────────────────────────────────────────────────────
+
+export async function queryD1Analytics(sql: string, params: any[] = []): Promise<any[]> {
+  if (!CF_ACCOUNT_ID || !CF_API_TOKEN || !CF_ANALYTICS_DB_ID) return [];
+
+  try {
+    const resp = await axios.post(
+      `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/d1/database/${CF_ANALYTICS_DB_ID}/query`,
+      { sql, params },
+      { headers: cfHeaders, timeout: 10000 }
+    );
+
+    return resp.data?.result?.[0]?.results || [];
+  } catch (err: any) {
+    console.error("[CF D1 Analytics] Query error:", err.message);
+    return [];
+  }
+}
