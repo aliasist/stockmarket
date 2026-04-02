@@ -25,6 +25,36 @@ type PredictionCacheEntry = {
   value: unknown
 }
 
+// ── Rate limiter (in-memory, per IP, resets every 60s) ───────────────────────
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>()
+const RATE_LIMIT_MAX = 120      // requests per window
+const RATE_LIMIT_WINDOW = 60_000 // 60 seconds
+
+function checkRateLimit(ip: string): { ok: boolean; remaining: number; resetIn: number } {
+  const now = Date.now()
+  const entry = rateLimitMap.get(ip)
+  if (!entry || entry.resetAt <= now) {
+    rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW })
+    return { ok: true, remaining: RATE_LIMIT_MAX - 1, resetIn: RATE_LIMIT_WINDOW }
+  }
+  entry.count++
+  const remaining = Math.max(0, RATE_LIMIT_MAX - entry.count)
+  return { ok: entry.count <= RATE_LIMIT_MAX, remaining, resetIn: entry.resetAt - now }
+}
+
+// ── Cache-Control headers per route ──────────────────────────────────────────
+function getCacheHeader(pathname: string): string {
+  if (pathname === "/api/quotes")          return "public, max-age=30, stale-while-revalidate=60"
+  if (pathname === "/api/news")            return "public, max-age=300, stale-while-revalidate=600"
+  if (pathname === "/api/vectors")         return "public, max-age=120, stale-while-revalidate=300"
+  if (pathname === "/api/health")          return "public, max-age=10"
+  if (pathname.startsWith("/api/eli5/"))   return "public, max-age=86400"  // 24h — static explanations
+  if (pathname.startsWith("/api/fmp/"))    return "public, max-age=300, stale-while-revalidate=600"
+  if (pathname.startsWith("/api/chart/"))  return "public, max-age=60, stale-while-revalidate=120"
+  if (pathname.startsWith("/api/predict/")) return "public, max-age=300"
+  return "no-store" // POST/DELETE routes and anything else
+}
+
 const PREDICTION_CACHE_TTL_MS = 5 * 60 * 1000
 const predictionCache = new Map<string, PredictionCacheEntry>()
 const watchlistInputSchema = z.object({
@@ -433,11 +463,37 @@ export default {
       })
     }
 
+    // ── Rate limit check ──
+    if (url.pathname.startsWith("/api/")) {
+      const ip = request.headers.get("CF-Connecting-IP") ?? "unknown"
+      const rl = checkRateLimit(ip)
+      if (!rl.ok) {
+        sendMetrics(env.DD_API_KEY, [{ metric: "aliasist.api.rate_limited", value: 1, tags: [`route:${url.pathname}`, "service:aliasist-pulse"] }])
+        return json({ message: "Too Many Requests" }, {
+          status: 429,
+          headers: {
+            "Retry-After": String(Math.ceil(rl.resetIn / 1000)),
+            "X-RateLimit-Limit": String(RATE_LIMIT_MAX),
+            "X-RateLimit-Remaining": "0",
+          },
+        })
+      }
+    }
+
     try {
       if (url.pathname.startsWith("/api/")) {
-        return await withDatadog(env.DD_API_KEY, url.pathname, request.method, () =>
-          handleApi(request, env)
-        )
+        return await withDatadog(env.DD_API_KEY, url.pathname, request.method, async () => {
+          const response = await handleApi(request, env)
+          // Attach Cache-Control header to GET responses
+          if (request.method === "GET") {
+            const cacheHeader = getCacheHeader(url.pathname)
+            const newHeaders = new Headers(response.headers)
+            newHeaders.set("Cache-Control", cacheHeader)
+            newHeaders.set("X-Powered-By", "Aliasist")
+            return new Response(response.body, { status: response.status, headers: newHeaders })
+          }
+          return response
+        })
       }
 
       return await serveAsset(request, env)
