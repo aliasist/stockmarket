@@ -16,6 +16,7 @@ const ResearchPage = lazy(() => import("./pages/ResearchPage"));
 const SettingsPage = lazy(() => import("./pages/SettingsPage"));
 const Top50Page = lazy(() => import("./pages/Top50Page"));
 const PitchPage = lazy(() => import("./pages/PitchPage"));
+const AdminPage = lazy(() => import("./pages/AdminPage"));
 
 export default function App() {
   const [splashDone, setSplashDone] = useState<boolean>(
@@ -51,6 +52,7 @@ export default function App() {
                   <PitchPage />
                 </ErrorBoundary>
               </Route>
+              <Route path="/admin" component={AdminPage} />
               <Route component={NotFound} />
             </Switch>
           </Suspense>

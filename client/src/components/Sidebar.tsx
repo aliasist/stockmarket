@@ -3,7 +3,7 @@ import { Link } from "wouter";
 import { useHashLocation } from "wouter/use-hash-location";
 import {
   LayoutDashboard, Newspaper, TrendingUp, Settings,
-  Zap, Brain, Moon, SunMedium, MessageSquare, Globe2, FileText, Menu, X, LogOut, UserCircle2
+  Zap, Brain, Moon, SunMedium, MessageSquare, Globe2, FileText, Menu, X, LogOut, UserCircle2, ShieldCheck
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
@@ -28,6 +28,7 @@ const navItems = [
   { href: "/top50", label: "Top 50 Companies", icon: Globe2 },
   { href: "/pitch", label: "Pitch Builder", icon: FileText },
   { href: "/settings", label: "Settings", icon: Settings },
+  { href: "/admin",    label: "Admin",    icon: ShieldCheck },
 ];
 
 export default function Sidebar({ eli5Mode, onToggleEli5 }: { eli5Mode: boolean; onToggleEli5: () => void }) {
