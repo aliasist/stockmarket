@@ -30,7 +30,7 @@ export default function ResearchPage() {
       <Sidebar eli5Mode={eli5Mode} onToggleEli5={() => setEli5Mode(!eli5Mode)} />
       <div className="main-content flex flex-col min-h-0">
         {/* Header */}
-        <header className="theme-topbar shrink-0 px-6 py-5 border-b border-border" style={{ position: "relative", overflow: "hidden" }}>
+        <header className="theme-topbar shrink-0 pl-12 pr-6 md:px-6 py-5 border-b border-border" style={{ position: "relative", overflow: "hidden" }}>
           {/* Subtle banner image in header background */}
           <div style={{
             position: "absolute", inset: 0,
@@ -62,16 +62,16 @@ export default function ResearchPage() {
           </div>
         </header>
 
-        {/* Two-column body */}
-        <div className="flex flex-1 min-h-0 overflow-hidden">
+        {/* Two-column body — stacks vertically on mobile */}
+        <div className="flex flex-col md:flex-row flex-1 min-h-0 md:overflow-hidden overflow-y-auto overscroll-contain">
           {/* Left: Chat */}
-          <div className="flex-1 overflow-y-auto overscroll-contain p-6 flex justify-center items-start">
+          <div className="flex-1 overflow-y-auto overscroll-contain p-6 flex justify-center items-start min-h-[480px] md:min-h-0">
             <ResearchChatPanel />
           </div>
 
           {/* Right: Tools panel */}
           <div
-            className="w-[360px] shrink-0 border-l border-border flex flex-col min-h-0 overflow-hidden"
+            className="w-full md:w-[360px] shrink-0 border-t md:border-t-0 md:border-l border-border flex flex-col min-h-0 overflow-hidden"
             style={{ background: "hsl(var(--card) / 0.4)" }}
           >
             {/* Ticker input */}

@@ -442,7 +442,7 @@ Return a JSON object with these exact keys:
 
       <div className="main-content flex flex-col min-h-0">
         {/* ── Topbar ──────────────────────────────── */}
-        <header className="theme-topbar shrink-0 px-6 py-4 border-b border-border flex items-center justify-between print-hide" style={{ position: "relative", overflow: "hidden" }}>
+        <header className="theme-topbar shrink-0 pl-12 pr-6 md:px-6 py-4 border-b border-border flex items-center justify-between print-hide" style={{ position: "relative", overflow: "hidden" }}>
           {/* Subtle street-level cyberpunk banner in pitch header */}
           <div style={{
             position: "absolute", inset: 0,

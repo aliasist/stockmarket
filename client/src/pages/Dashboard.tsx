@@ -102,7 +102,7 @@ export default function Dashboard() {
         <TickerTape />
 
         {/* Aliasist status bar */}
-        <div className="shrink-0 px-4 md:px-6 py-1.5 border-b border-border/40 flex items-center justify-between">
+        <div className="shrink-0 pl-12 pr-4 md:px-6 py-1.5 border-b border-border/40 flex items-center justify-between">
           <span className="status-badge">systems operational // aliasist pulse</span>
           <span className="status-badge" style={{ opacity: 0.5 }}>
             {new Date().toLocaleDateString("en-US", { month: "short", year: "numeric" }).toUpperCase()}
@@ -121,7 +121,7 @@ export default function Dashboard() {
             opacity: 0.06, filter: "saturate(1.8)",
             pointerEvents: "none",
           }} />
-          <div className="min-w-0 pl-8 sm:pl-0">
+          <div className="min-w-0 pl-12 sm:pl-0">
             <div className="theme-kicker mb-1.5">
               {eli5Mode ? "Learning Interface" : "// ALIASIST · SIGNAL DECK"}
             </div>
