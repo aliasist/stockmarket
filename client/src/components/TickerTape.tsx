@@ -20,7 +20,7 @@ export default function TickerTape() {
   const items = [...quotes, ...quotes];
 
   return (
-    <div className="theme-topbar border-b border-border overflow-hidden py-2">
+    <div className="theme-topbar border-b border-border overflow-hidden py-2 pl-12 md:pl-0">
       <div className="ticker-tape inline-flex gap-8">
         {items.map((q, i) => (
           <span key={i} className="inline-flex items-center gap-2 text-xs whitespace-nowrap">

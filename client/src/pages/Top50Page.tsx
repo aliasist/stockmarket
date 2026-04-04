@@ -48,7 +48,7 @@ export default function Top50Page() {
 
       <div className="main-content flex flex-col h-full overflow-hidden">
         {/* Header */}
-        <div className="theme-topbar flex items-center justify-between px-6 py-4 border-b border-border shrink-0" style={{ position: "relative", overflow: "hidden" }}>
+        <div className="theme-topbar flex items-center justify-between pl-12 pr-6 md:px-6 py-4 border-b border-border shrink-0" style={{ position: "relative", overflow: "hidden" }}>
           {/* Subtle orbital intelligence banner */}
           <div style={{
             position: "absolute", inset: 0,
@@ -84,12 +84,14 @@ export default function Top50Page() {
         </div>
 
         {/* Main content area */}
-        <div className="flex flex-1 overflow-hidden">
-          {/* Left panel: Company list */}
+        <div className="flex flex-col md:flex-row flex-1 md:overflow-hidden overflow-y-auto overscroll-contain">
+          {/* Left panel: Company list — hidden on mobile when detail is open */}
           <div
             className={cn(
-              "flex flex-col border-r border-border transition-all duration-300",
-              selectedCompany || compareMode ? "w-80 shrink-0" : "flex-1"
+              "flex flex-col border-b md:border-b-0 md:border-r border-border transition-all duration-300",
+              selectedCompany || compareMode
+                ? "hidden md:flex md:w-80 md:shrink-0"
+                : "flex-1"
             )}
           >
             {/* Search + filters */}
@@ -161,9 +163,9 @@ export default function Top50Page() {
             </div>
           </div>
 
-          {/* Right panel: Detail or Compare */}
+          {/* Right panel: Detail or Compare — full-width on mobile */}
           {(selectedCompany || compareMode) && (
-            <div className="flex-1 overflow-hidden flex flex-col">
+            <div className="flex-1 md:overflow-hidden flex flex-col">
               {compareMode && !selectedCompany ? (
                 <ComparePanel
                   onClose={() => setCompareMode(false)}

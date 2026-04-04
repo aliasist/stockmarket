@@ -66,7 +66,7 @@ export default function VectorsPage() {
       <Sidebar eli5Mode={eli5Mode} onToggleEli5={() => setEli5Mode(!eli5Mode)} />
       <div className="main-content flex flex-col">
         <TickerTape />
-        <div className="theme-topbar px-6 py-4 border-b border-border" style={{ position: "relative", overflow: "hidden" }}>
+        <div className="theme-topbar pl-12 pr-6 md:px-6 py-4 border-b border-border" style={{ position: "relative", overflow: "hidden" }}>
           {/* Subtle NYSE abduction scan banner */}
           <div style={{
             position: "absolute", inset: 0,
