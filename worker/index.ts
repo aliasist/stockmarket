@@ -77,6 +77,24 @@ function notFound(): Response {
   return json({ message: "Not found" }, { status: 404 })
 }
 
+function requireAdmin(request: Request, env: Env): Response | null {
+  const configured = env.ADMIN_PASSWORD?.trim()
+  if (!configured) {
+    return json({ error: "Admin password is not configured on the server" }, { status: 503 })
+  }
+
+  const provided = request.headers.get("x-admin-password")?.trim()
+  if (!provided) {
+    return json({ error: "Unauthorized - admin password required" }, { status: 401 })
+  }
+
+  if (provided !== configured) {
+    return json({ error: "Forbidden - invalid admin password" }, { status: 403 })
+  }
+
+  return null
+}
+
 function getCachedPrediction(ticker: string): unknown | null {
   const cached = predictionCache.get(ticker)
   if (!cached) {
@@ -204,6 +222,9 @@ async function handleApi(request: Request, env: Env): Promise<Response> {
   }
 
   if (pathname === "/api/watchlist" && request.method === "POST") {
+    const adminError = requireAdmin(request, env)
+    if (adminError) return adminError
+
     const body = await request.json()
     const parsed = watchlistInputSchema.safeParse(body)
     if (!parsed.success) {
@@ -224,6 +245,9 @@ async function handleApi(request: Request, env: Env): Promise<Response> {
   }
 
   if (pathname.startsWith("/api/watchlist/") && request.method === "DELETE") {
+    const adminError = requireAdmin(request, env)
+    if (adminError) return adminError
+
     const ticker = decodeURIComponent(pathname.slice("/api/watchlist/".length)).toUpperCase()
     await storage.removeFromWatchlist(env, ticker)
     if (env.ANALYTICS) {
@@ -241,6 +265,9 @@ async function handleApi(request: Request, env: Env): Promise<Response> {
   }
 
   if (pathname === "/api/scrub/trigger" && request.method === "POST") {
+    const adminError = requireAdmin(request, env)
+    if (adminError) return adminError
+
     predictionCache.clear()
     await runScrub(env)
     if (env.ANALYTICS) {
@@ -375,6 +402,9 @@ async function handleApi(request: Request, env: Env): Promise<Response> {
   }
 
   if (pathname === "/api/analytics/top-tickers") {
+    const adminError = requireAdmin(request, env)
+    if (adminError) return adminError
+
     try {
       const rows = await authStorage.getTopTickers(env, 7)
       return json({ tickers: rows })
@@ -384,6 +414,9 @@ async function handleApi(request: Request, env: Env): Promise<Response> {
   }
 
   if (pathname === "/api/analytics/activity") {
+    const adminError = requireAdmin(request, env)
+    if (adminError) return adminError
+
     try {
       const rows = await authStorage.getActivityCounts(env, 7)
       return json({ activity: rows })

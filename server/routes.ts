@@ -46,6 +46,26 @@ function clearPredictionCache(): void {
   predictionCache.clear()
 }
 
+function getAdminPasswordError(
+  providedPassword: string | undefined
+): { status: number; message: string } | null {
+  const configuredPassword = process.env.ADMIN_PASSWORD?.trim()
+  if (!configuredPassword) {
+    return { status: 503, message: "Admin password is not configured on the server" }
+  }
+
+  const incoming = providedPassword?.trim()
+  if (!incoming) {
+    return { status: 401, message: "Unauthorized - admin password required" }
+  }
+
+  if (incoming !== configuredPassword) {
+    return { status: 403, message: "Forbidden - invalid admin password" }
+  }
+
+  return null
+}
+
 export async function registerRoutes(app: Express): Promise<void> {
   app.get("/api/health", (_req, res) => {
     res.json({
@@ -185,6 +205,11 @@ export async function registerRoutes(app: Express): Promise<void> {
   })
 
   app.post("/api/watchlist", async (req, res) => {
+    const adminError = getAdminPasswordError(req.header("x-admin-password"))
+    if (adminError) {
+      return res.status(adminError.status).json({ error: adminError.message })
+    }
+
     const parsed = insertWatchlistSchema.safeParse(req.body)
     if (!parsed.success) {
       return res.status(400).json({ error: parsed.error })
@@ -201,6 +226,11 @@ export async function registerRoutes(app: Express): Promise<void> {
   })
 
   app.delete("/api/watchlist/:ticker", async (req, res) => {
+    const adminError = getAdminPasswordError(req.header("x-admin-password"))
+    if (adminError) {
+      return res.status(adminError.status).json({ error: adminError.message })
+    }
+
     try {
       storage.removeFromWatchlist(req.params.ticker.toUpperCase())
       res.status(204).end()
@@ -225,7 +255,12 @@ export async function registerRoutes(app: Express): Promise<void> {
     res.json(runs)
   })
 
-  app.post("/api/scrub/trigger", async (_req, res) => {
+  app.post("/api/scrub/trigger", async (req, res) => {
+    const adminError = getAdminPasswordError(req.header("x-admin-password"))
+    if (adminError) {
+      return res.status(adminError.status).json({ error: adminError.message })
+    }
+
     clearPredictionCache()
     void runScrub(process.env.GEMINI_API_KEY).catch(console.error)
     res.json({ message: "Scrub triggered" })

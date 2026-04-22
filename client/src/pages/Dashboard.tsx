@@ -21,6 +21,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { track } from "@/lib/track";
 import { getMarketState, getMarketBg } from "@/lib/marketState";
+import { clearStoredAdminPassword, getOrPromptAdminPassword } from "@/lib/adminAuth";
 
 interface Quote {
   ticker: string;
@@ -72,10 +73,37 @@ export default function Dashboard() {
   });
 
   const triggerScrub = useMutation({
-    mutationFn: () => apiRequest("POST", "./api/scrub/trigger"),
+    mutationFn: async () => {
+      const password = getOrPromptAdminPassword();
+      if (!password) {
+        throw new Error("Admin password required");
+      }
+
+      return apiRequest("POST", "/api/scrub/trigger", undefined, {
+        "x-admin-password": password,
+      });
+    },
     onSuccess: () => {
       toast({ title: "Scrub triggered", description: "Data engine is scanning sources..." });
       setTimeout(() => qc.invalidateQueries(), 5000);
+    },
+    onError: (error) => {
+      const message = error instanceof Error ? error.message : "Failed to trigger scrub";
+      if (message.includes("401") || message.includes("403")) {
+        clearStoredAdminPassword();
+        toast({
+          title: "Admin authentication failed",
+          description: "Password was rejected. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Scrub failed",
+        description: message,
+        variant: "destructive",
+      });
     },
   });
 

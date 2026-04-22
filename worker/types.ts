@@ -13,6 +13,7 @@ export interface Env {
   GEMINI_API_KEY?: string
   FMP_API_KEY?: string
   DD_API_KEY?: string
+  ADMIN_PASSWORD?: string
 }
 
 export interface AnalyticsEngineDataset {
