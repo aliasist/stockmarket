@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { clearStoredAdminPassword, getStoredAdminPassword, storeAdminPassword } from "@/lib/adminAuth"
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -74,6 +75,10 @@ export default function AdminPage() {
   const [commits, setCommits] = useState<Record<string, GitCommit[]>>({})
   const [refreshing, setRefreshing] = useState<string | null>(null)
   const [lastChecked, setLastChecked] = useState<string>("")
+  const [password, setPassword] = useState(() => getStoredAdminPassword())
+  const [authorized, setAuthorized] = useState(false)
+  const [authError, setAuthError] = useState("")
+  const [verifying, setVerifying] = useState(false)
 
   // ── Health checks ──────────────────────────────────────────────────────────
   const checkHealth = useCallback(async () => {
@@ -125,9 +130,48 @@ export default function AdminPage() {
   }, [])
 
   useEffect(() => {
+    if (!authorized) return
     checkHealth()
     fetchCommits()
-  }, [checkHealth, fetchCommits])
+  }, [authorized, checkHealth, fetchCommits])
+
+  const verifyPassword = async (event?: React.FormEvent<HTMLFormElement>) => {
+    event?.preventDefault()
+
+    const normalized = password.trim()
+    if (!normalized) {
+      setAuthError("Enter the admin password.")
+      return
+    }
+
+    setVerifying(true)
+    setAuthError("")
+
+    try {
+      const res = await fetch("/api/admin/verify", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-password": normalized,
+        },
+        body: JSON.stringify({}),
+      })
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || data.message || "Admin authentication failed.")
+      }
+
+      storeAdminPassword(normalized)
+      setAuthorized(true)
+    } catch (error) {
+      clearStoredAdminPassword()
+      setAuthorized(false)
+      setAuthError(error instanceof Error ? error.message : "Admin authentication failed.")
+    } finally {
+      setVerifying(false)
+    }
+  }
 
   // ── News refresh trigger ───────────────────────────────────────────────────
   const triggerRefresh = async (worker: string, endpoint: string) => {
@@ -139,6 +183,34 @@ export default function AdminPage() {
   }
 
   // ─── Render ─────────────────────────────────────────────────────────────────
+  if (!authorized) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <Card className="w-full max-w-md border-border/50 bg-card/70 backdrop-blur">
+          <CardHeader>
+            <CardTitle className="text-xl font-mono">Admin access</CardTitle>
+            <p className="text-sm text-muted-foreground">Enter the admin password to continue.</p>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={verifyPassword} className="space-y-4">
+              <input
+                type="password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
+                autoFocus
+              />
+              {authError && <p className="text-sm text-destructive">{authError}</p>}
+              <Button type="submit" className="w-full" disabled={verifying}>
+                {verifying ? "Checking..." : "Unlock Admin"}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
   return (
     <div className="p-4 md:p-6 space-y-6 max-w-[1400px] mx-auto">
       {/* Header */}
