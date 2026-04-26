@@ -10,6 +10,11 @@ export function clearStoredAdminPassword(): void {
   localStorage.removeItem(ADMIN_PASSWORD_KEY);
 }
 
+export function storeAdminPassword(password: string): void {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(ADMIN_PASSWORD_KEY, password);
+}
+
 export function getOrPromptAdminPassword(): string | null {
   if (typeof window === "undefined") return null;
 
@@ -20,6 +25,6 @@ export function getOrPromptAdminPassword(): string | null {
   const normalized = entered?.trim() ?? "";
   if (!normalized) return null;
 
-  localStorage.setItem(ADMIN_PASSWORD_KEY, normalized);
+  storeAdminPassword(normalized);
   return normalized;
 }

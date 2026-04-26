@@ -78,6 +78,15 @@ export async function registerRoutes(app: Express): Promise<void> {
     })
   })
 
+  app.post("/api/admin/verify", (req, res) => {
+    const adminError = getAdminPasswordError(req.header("x-admin-password"))
+    if (adminError) {
+      return res.status(adminError.status).json({ error: adminError.message })
+    }
+
+    res.json({ ok: true })
+  })
+
   app.get("/api/quotes", async (_req, res) => {
     try {
       const list = await storage.getWatchlist()
